@@ -3,9 +3,7 @@
 - hosts: all
   become: yes
   gather_facts: yes
-  remote_user: svc_ansible
-  vars_files:
-    - ~/svc_ansible.yml
+  remote_user: ansible
 
   tasks:
   - ping:
