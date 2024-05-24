@@ -1,0 +1,5 @@
+- name: Restart elastic agent service
+  ansible.builtin.service:
+    name: elastic-agent
+    state: restarted
+

@@ -1,0 +1,14 @@
+# a 'test' playbook for testing connection and credentials
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: root
+
+  tasks:
+  - name: Add the user 'ansible' with a bash shell, appending the group 'wheel'
+    ansible.builtin.user:
+      name: ansible
+      shell: /bin/bash
+      groups: wheel 
+      append: yes

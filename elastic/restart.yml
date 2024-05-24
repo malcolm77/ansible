@@ -1,0 +1,19 @@
+# a 'test' playbook for testing connection and credentials
+---
+- hosts: elastic
+  become: yes
+  gather_facts: yes
+  remote_user: root
+  serial: 1
+
+  roles:
+    - role: elasticsearch
+      tags: SEARCH
+      when: inventory_hostname in groups['searchservers']
+    - role: kibana
+      tags: KIBANA
+      when: inventory_hostname in groups['kibanaservers']
+    - role: elasticagent
+      tags: AGENT
+      when: inventory_hostname in groups['agentservers']
+

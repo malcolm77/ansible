@@ -1,0 +1,4 @@
+- name: Restart elasticsearch service
+  ansible.builtin.service:
+    name: elasticsearch
+    state: restarted
