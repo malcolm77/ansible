@@ -1,7 +1,0 @@
-plugin: vmware_vm_inventory
-strict: False
-hostname: sbims-vsp-uns01.testbench.nafis
-username: nicwal.adm@testbench
-password: 'Welcome12345!!'
-validate_certs: False
-with_tags: True
