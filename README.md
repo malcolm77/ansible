@@ -28,17 +28,3 @@
 <strong>users</strong> - Scripts to create users</br>
 <strong>veeam</strong> - Install the Veeam Agent (not testinged with NextGen)</br>
 
-<h2>Repo Infomation</h2>
-<pre>
-Creating a new repository on the command line
-touch README.md
-git init
-git add README.md
-git commit -m "first commit"
-git remote add origin http://xxx.xxx.xxx.xxx:3000/Idemia/PDC_Prod_RHEL_Ansible.git
-git push -u origin master
-
-Pushing an existing repository from the command line
-git remote add origin http://xxx.xxx.xxx.xxx:3000/Idemia/PDC_Prod_RHEL_Ansible.git
-git push -u origin master
-</pre>
