@@ -1,0 +1,21 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes 
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: Get log file name
+    ansible.builtin.find:
+      paths: /usr/mph
+      patterns: "*.res"
+      recurse: yes
+    register: logs
+
+  - name: Get Hardening Report from the ansible home directory
+    ansible.builtin.fetch:
+      src: "{{ item.path }}"
+      dest: /home/username/PDC_Prod_RHEL_Ansible/fetch/logs
+    with_items: "{{ logs.files }}"

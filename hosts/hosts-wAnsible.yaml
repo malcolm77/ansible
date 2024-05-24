@@ -1,0 +1,16 @@
+
+all:
+  children:
+    env_testbench: # variables defined at this groups can be found in group vars
+      children:
+        build_integration:
+          children:
+            windows:
+              hosts:
+                mbishost:
+                  ansible_host: xxx.xxx.xxx.xxx
+              vars:
+                ansible_connection: winrm
+                host_backendip: xxx.xxx.xxx.xxx
+                host_keycloakip: xxx.xxx.xxx.xxx
+                mbis_frontend_wallpaper: "./files/frontend/Wallpaper/domain_Wallpaper_Integration.jpg"

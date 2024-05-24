@@ -1,0 +1,6 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Fix timezone 
+    command: timedatectl set-timezone Australia/Sydney

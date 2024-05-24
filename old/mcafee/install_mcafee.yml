@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Copy McAfee Agent installers
+    copy: src=/shared/mcafee/{{ item }} dest=/tmp
+    with_items:
+    - installdeb.sh
+    - installrpm.sh
+    - install.sh
+    
+  - name: Install Agent
+    command: /usr/bin/sh /tmp/install.sh -i
+
+  - name: Start communication
+    command: /opt/McAfee/agent/bin/cmdagent -p

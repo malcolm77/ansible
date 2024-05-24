@@ -1,0 +1,57 @@
+---
+###
+# This playbook will get the latest security patches from the local repo and install them
+# NOTE - This INCLUDES any kernel updates
+###
+
+- name: Obtain a list of security updates and install them.
+  hosts: all
+  gather_facts: yes
+  become: true
+
+  tasks:
+    - name: Download security packages to server
+      yum:
+        name: "*"
+        state: latest
+        security: yes
+        bugfix: no
+        download_only: yes
+        download_dir: /tmp/security_updates_{{ansible_date_time.date}}
+        exclude: net-snmp*
+        disable_gpg_check: yes
+
+    - name: Install identified packages using yum
+      yum:
+        name: "*"
+        state: latest
+        security: yes
+        bugfix: no
+        exclude: net-snmp*
+        disable_gpg_check: yes
+
+    - name: Check if a reboot is needed - rhel6
+      block:
+        - name: check if rhel6 server restart is needed
+          shell: needs-restarting
+          failed_when: false
+          register: reboot_required
+          changed_when: false
+        - name: Reboot the rhel6 server if required
+          when: reboot_required.stdout_lines | length != 0
+          reboot:
+            reboot_timeout: 300
+      when: ansible_distribution_major_version == '6'
+
+    - name: Check if a reboot is needed - rhel7
+      block:
+        - name: check if a rhel7 server restart is required
+          shell: needs-restarting -r
+          register: result
+          failed_when: false
+          changed_when: result.rc == 0
+        - name: Reboot rhel7 server and wait up to 5 minute for it to return
+          when: result.rc == 1
+          reboot:
+            reboot_timeout: 300
+      when: ansible_distribution_major_version == '7'

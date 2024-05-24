@@ -1,0 +1,56 @@
+---
+# tasks file for build
+
+# tasks file for ping
+- include: ping.yml
+# confirm how ot checkout correct version to build
+# should production builds be download from Nexus
+# Moving forward we want to debuild and deploy a BETA version to NEXUS repo,
+
+# this will be used until I get export contorl access to Nexus
+
+
+- name: SVN checkout
+  subversion:
+    repo: https://mph-svn-master-01.srv.sec.safran/au/cj/au-cj-acic/trunk
+    dest: /opt/jenkins/checkout/project/trunk
+    in_place: yes
+  register: result
+
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result
+
+
+- name: "ANT build"
+  ansible.builtin.shell: "ant -f ./project/trunk/build.xml"
+  args:
+    chdir: /opt/jenkins/checkout/
+
+
+- name: "Delete target folder"
+  ansible.builtin.shell: "ssh root@xxx.xxx.xxx.xxx 'rm -Rf /custo/release'"
+  args:
+    chdir: /opt/jenkins/checkout/
+
+
+- name: "Transfer data to repo"
+  ansible.builtin.shell: "scp -r -o StrictHostKeyChecking=no ./project/trunk/release root@xxx.xxx.xxx.xxx:/custo"
+  args:
+    chdir: /opt/jenkins/checkout/
+
+- name: "Rename custo packages"
+  ansible.builtin.shell: |
+    ssh root@xxx.xxx.xxx.xxx "cp /custo/release/backend/Custo/bis-customization-backend* /custo/release/backend/Custo/bis-customization-backend-mbis.rpm"
+    ssh root@xxx.xxx.xxx.xxx "cp /custo/release/backend/Custo/bis-customization-dbm* /custo/release/backend/Custo/bis-customization-dbm-oracle-mbis.rpm"
+    ssh root@xxx.xxx.xxx.xxx "cp /custo/release/backend/Custo/bis-customization-des-mbis* /custo/release/backend/Custo/bis-customization-des-mbis.rpm"
+    ssh root@xxx.xxx.xxx.xxx "cp /custo/release/backend/Custo/bis-customization-des-mig* /custo/release/backend/Custo/bis-customization-des-mig-mbis.rpm"
+  args:
+    chdir: /opt/jenkins/checkout/
+
+
+- name: "Change owner for packages"
+  ansible.builtin.shell: "ssh root@xxx.xxx.xxx.xxx 'chown -R apache.apache /custo'"
+  args:
+    chdir: /opt/jenkins/checkout/

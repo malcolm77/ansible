@@ -1,0 +1,8 @@
+---
+# tasks file for testrole
+
+
+# check that all the units are running
+- name: Testrole
+  ansible.builtin.command: echo notify
+  notify: exmaplehandlers

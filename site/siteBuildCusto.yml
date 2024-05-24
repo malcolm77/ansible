@@ -1,0 +1,32 @@
+---
+
+### Run command ansible-playbook -i hosts -k -K site.yml
+### Run using SSH keys   ansible-playbook -i hosts-QUALIF site.yml
+### Run test ansible-playbook -i hosts-test site.yml
+### Run KEVIN ansible-playbook -i hosts-kevin site.yml
+### Run with password vault ansible-playbook -i /home/mphadmin/ansible-scripts-CBR/hosts-kevin /home/mphadmin/ansible-scripts-CBR/testdeploy.yml --vault-password-file ../MBISvaultpassword.txt
+
+# Intergration =
+# Qualification
+# test browser and fit client. Test card capture, don't add data, justchekcthat it loads
+# ssh-copy-id
+
+# Add a paramater for a tag vesrion.
+
+
+- name: apply common configuration to all hosts
+  hosts: Jenkins # Building on JENKINS-SLAVE for now, will be moved to a diferent host a a last stage
+  remote_user: root
+  become_user: jenkins
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  gather_facts: false
+
+  vars:
+  - repoPath: /custo/integration
+  - aucjacicCheckoutConfigPath: /opt/jenkins/checkout/project/integration
+  - packageCheckoutBrachTag: https://mph-svn-master-01.srv.sec.safran/au/cj/au-cj-acic/trunk
+
+  roles:
+  -  build

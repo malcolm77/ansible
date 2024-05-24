@@ -1,0 +1,23 @@
+---
+- hosts: MBIS
+  become: yes
+  gather_facts: yes 
+  remote_user: svc_ansible
+  serial: 1
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: Get log file list
+    ansible.builtin.find:
+      paths: /opt/bis/log
+      patterns: "*.log"
+      recurse: yes
+      age: -1d
+    register: logs
+
+  - name: Copy log files
+    ansible.builtin.fetch:
+      src: "{{ item.path }}"
+      dest: /data/logs
+    with_items: "{{ logs.files }}"

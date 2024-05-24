@@ -1,0 +1,13 @@
+all:
+  children:
+    env_testbench: # variables defined at this groups can be found in group vars
+      children:
+        build_integration:
+          children:
+            mbis:
+              hosts:
+                bisdb60:
+                  ansible_host: xxx.xxx.xxx.xxx
+                bisdb67:
+                  ansible_host: xxx.xxx.xxx.xxx
+

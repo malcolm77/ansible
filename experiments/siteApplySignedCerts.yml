@@ -1,0 +1,193 @@
+---
+
+#!/usr/bin/env python3
+# """
+
+- name: Apply Signed Certs
+  hosts: mbis
+  become: true
+  become_user: bis
+
+  vars:
+  #Python 3 requied for xml
+    ansible_python_interpreter: /usr/bin/python3
+
+    p7b_file: "Path to certnew.p7b"
+    chain: "Path to certnew.p7b"
+    private_key: "Path to private.key"
+    workingdir: script_dir
+    ssl_dir: "/opt/bis/ssl"
+    bis_dir: "/opt/bis"
+    ssl_private_dir: "/opt/bis/ssl/private"
+    support_files: "./support_files"
+    wildfly_dir: "/opt/bis/jboss/standalone/configuration"
+    etc_dir: "/opt/bis/etc"
+    alias: "mbisdev"
+    PW: "Morphotrak"
+
+  tasks:
+
+
+  - name: Check if AppServerShutdown file exists
+    ansible.builtin.stat:
+      path: "/opt/bis/scripts/AppServerShutdown"
+    register: AppServerShutdownfile
+
+  - name: "Shutdown of AppServer #2"
+    ansible.builtin.shell: "/opt/bis/scripts/AppServerShutdown"
+    args:
+      executable: /bin/bash
+      chdir: "/opt/bis/scripts"
+    become_user: bis
+    become: true
+    become_method: sudo   # Become method being used when manually running scripts
+    become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+    register: _result
+    changed_when: "'Stopping' in _result.stdout"
+    when: AppServerShutdownfile.stat.exists
+
+  - block:
+    - name: "check if {{ alias }}-sha256.keystore file exists"
+      ansible.builtin.stat:
+        path: "/opt/bis/etc/{{ alias }}-sha256.keystore"
+      register: _sha256keystorefile
+
+    - name: "backup {{ alias }}-sha256.keystore"
+      ansible.builtin.copy:
+        src: "/opt/bis/etc/{{ alias }}-sha256.keystore"
+        dest: "/opt/bis/etc/{{ alias }}-sha256.keystore.OLD"
+        remote_src: yes
+        backup: yes
+      when: _sha256keystorefile.stat.exists
+
+  - block:
+    - name: Check if ssclient.truststore file exists
+      ansible.builtin.stat:
+        path: "/opt/bis/etc/ssclient.truststore"
+      register: _ssclienttruststorefile
+
+    - name: Backup ssclient.truststore
+      ansible.builtin.copy:
+        src: /opt/bis/etc/ssclient.truststore
+        dest: /opt/bis/etc/ssclient.truststore.OLD
+        remote_src: yes
+        backup: yes
+      when: _ssclienttruststorefile.stat.exists
+
+
+  - name: Create a /opt/bis/ssl if it does not exist
+    ansible.builtin.file:
+      path: /opt/bis/ssl
+      state: directory
+      mode: '0755'
+
+  - name: Copy cacert.pem to /bis/ssl/
+    ansible.builtin.copy:
+      src: ./files/mbis/backendcert/cacert.pem
+      dest: /opt/bis/ssl/cacert.pem
+
+  - name: download chain.cer to /bis/ssl/
+    ansible.builtin.copy:
+      src: ./files/mbis/backendcert/chain.cer
+      dest: /opt/bis/ssl/chain.cer
+
+  - name:  "Copy {{ alias }}-sha256.p12 to /bis/ssl/"
+    ansible.builtin.copy:
+      src: "./files/mbis/backendcert/{{ alias }}-sha256.p12"
+      dest: "/opt/bis/ssl/{{ alias }}-sha256.p12"
+      force: yes
+
+
+  # run_shell_command(f"keytool -importkeystore -destkeystore {alias}-sha256.keystore -deststorepass {PW} -srckeystore {alias}-sha256.p12 -srcstorepass {PW} -alias {alias}")
+
+  - name: Import a pkcs12 keystore with a specified alias, create it if it doesn't exist
+    community.general.java_cert:
+      pkcs12_path: "/opt/bis/ssl/{{ alias }}-sha256.p12"
+      pkcs12_alias: "{{ alias }}"
+      pkcs12_password: "{{ PW }}"
+      keystore_path: "/opt/bis/etc/{{ alias }}-sha256.keystore"
+      keystore_pass: "{{ PW }}"
+      keystore_create: yes
+      state: present
+      cert_alias: "{{ alias }}"
+
+
+  - name: Import a pkcs12 keystore with a specified alias, create it if it doesn't exist
+    community.general.java_cert:
+      cert_path: /opt/bis/ssl/chain.cer
+      keystore_path: /opt/bis/etc/ssclient.truststore
+      keystore_pass: "{{ PW }}"
+      keystore_create: yes
+      state: present
+      cert_alias: sscacert
+
+  - name: Import a pkcs12 keystore with a specified alias, create it if it doesn't exist
+    community.general.java_cert:
+      cert_path: /opt/bis/ssl/cacert.pem
+      keystore_path: /opt/bis/etc/ssclient.truststore
+      keystore_pass: "{{ PW }}"
+      keystore_create: yes
+      state: present
+      cert_alias: cacert
+      trust_cacert: True
+
+  - name: "create server {{ alias }} keystore link and backup if exists"
+    ansible.builtin.include_tasks: ./tasks-createAndBackupSymboliclinks.yml
+    loop:
+        - { link_name: /opt/bis/etc/server.mbisdev.keystore, link_target: "/opt/bis/etc/{{ alias }}-sha256.keystore" }
+        - { link_name: /opt/bis/etc/server.keystore , link_target: "/opt/bis/etc/server.{{ alias }}.keystore" }
+        - { link_name: /opt/bis/etc/server.mbisdev.p12, link_target: "/opt/bis/etc/{{ alias }}-sha256.p12" }
+        - { link_name: /opt/bis/jboss/standalone/configuration/wildfly.keystore, link_target: "/opt/bis/etc/server.{{ alias }}.keystore"  }
+        - { link_name: /opt/bis/mbis-broker/etc/wms.keystore, link_target: "/opt/bis/etc/server.{{ alias }}.keystore" }
+        # Create keystore link
+        - { link_name: /opt/bis/etc/client.truststore, link_target: /opt/bis/etc/ssclient.truststore }
+
+
+  # - ansible.builtin.import_role:
+  #     name: mbis/mbis-mbis-repository
+
+  # - name: "Install python3-lxml "
+  #   yum:
+  #     name: "{{ item }}"
+  #     state: latest
+  #     disablerepo: "*"
+  #     enablerepo: "{{ mbis_repository_name }}"
+  #   become: true
+  #   become_user: root
+  #   async: 3600
+  #   poll: 10
+  #   with_list:
+  #     - python3-lxml
+
+  #  # artemis.keystore points to server.keystore
+  # - name: Udpate password in broker.xml'
+  #   block:
+  #   - name: Read an element's attribute values /configuration/core/acceptors/acceptor[@name='artemis']
+  #     xml:
+  #       path: "/opt/bis/mbis-broker/etc/broker.xml"
+  #       xpath: /x:configuration/y:core/y:acceptors/y:acceptor[@name="artemis"]
+  #       namespaces:
+  #         x: urn:activemq
+  #         y: urn:activemq:core
+  #       content: text
+  #     register: _acceptor
+
+  #   - ansible.builtin.debug:
+  #       msg : " test {{ _acceptor.matches[0]['{urn:activemq:core}acceptor'] }} "
+
+
+  #   - name: "add keystore password to broker.xml"
+  #     xml:
+  #       path: "/opt/bis/mbis-broker/etc/broker.xml"
+  #       xpath: /x:configuration/y:core/y:acceptors/y:acceptor[@name="artemis"]
+  #       namespaces:
+  #         x: urn:activemq
+  #         y: urn:activemq:core
+  #       value: "{{  _acceptor.matches[0]['{urn:activemq:core}acceptor'] | regex_replace('(?<=keyStorePassword=).*?(?=;)', PW ) }}"
+
+    # TBC
+    # ensure_ownership(ssl_dir, etc_dir)
+    # clean_up(ssl_dir)
+
+
+

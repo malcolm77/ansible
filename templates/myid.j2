@@ -1,0 +1,10 @@
+{% for voter in ((groups['zookeeper_voters']|default([]))|sort) %}
+  {%- if voter == inventory_hostname -%}
+    {{ loop.index }}
+  {%- endif -%}
+{% endfor %}
+{% for observer in ((groups['zookeeper_observers']|default([]))|sort) %}
+  {%- if observer == inventory_hostname -%}
+    {{ loop.index + groups['zookeeper_voters']|length }}
+  {%- endif -%}
+{% endfor %}

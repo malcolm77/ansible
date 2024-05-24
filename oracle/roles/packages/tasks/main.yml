@@ -1,0 +1,90 @@
+---
+- name: Install RHEL8 packages REQUIRED by Oracle 19
+  yum:
+    name:
+      - bc
+      - binutils
+      - elfutils-libelf
+      - elfutils-libelf-devel
+      - fontconfig-devel
+      - glibc
+      - glibc-devel
+      - ksh
+      - libaio
+      - libaio-devel
+      - libXrender
+      - libX11
+      - libXau
+      - libXi
+      - libXtst
+      - libgcc
+      - libnsl
+      - librdmacm
+      - libstdc++
+      - libstdc++-devel
+      - libxcb
+      - libibverbs
+      - make
+      - policycoreutils
+      - policycoreutils-python-utils
+      - smartmontools
+      - sysstat
+      - gcc 
+      - libgcc 
+      - xhost
+      - xterm
+      - xorg-x11-xauth*
+
+- name: Install RHEL8 OPTIONAL packages mentioned by Oracle 19
+  yum:
+    name:
+      - libnsl2 	# for Oracle Database Client only
+      - libvirt-libs 	# for KVM
+      - net-tools 	# for Oracle RAC and Oracle Clusterware
+      - nfs-utils 	# for Oracle ACFS
+
+- name: Install RHEL8 some more packages required by Oracle 19
+  yum:
+    name:
+      - unixODBC
+      - openldap-clients
+      - sssd
+      - sssd-ldap
+      - oddjob-mkhomedir
+      - openssl-perl
+      - adcli 
+      - authconfig
+      - nscd
+
+- name: Copy Oracle Cluster Verification Utility package to server
+  block:
+  - name: Copy Packages to server
+    copy:
+      src: cvuqdisk-1.0.10-1.rpm
+      dest: /tmp
+      owner: ansible
+      group: ansible
+      mode: '0644' 
+
+  - name: Install package
+    yum:
+      name: /tmp/cvuqdisk-1.0.10-1.rpm
+      disable_gpg_check: yes
+      state: present
+  
+- name: Copy Oracle preinstall packages
+  block:
+  - name: Copy package
+    copy:
+      src: oracle-database-preinstall-19c-1.0-2.el8.x86_64.rpm
+      dest: /tmp
+      owner: ansible
+      group: ansible
+      mode: '0644' 
+  
+  - name: Install package
+    yum:
+      name: /tmp/oracle-database-preinstall-19c-1.0-2.el8.x86_64.rpm
+      disable_gpg_check: yes
+      state: present
+  

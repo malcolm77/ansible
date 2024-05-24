@@ -1,0 +1,22 @@
+---
+#####
+# Configure the MBSS servers
+#####
+
+- name: Configure the MBSS servers
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  roles:
+    - role: lvolume
+      tags: lvolume
+
+    - role: filesystem
+      tags: filesystem
+
+    - role: fstab
+      tags: fstab
+ 
+    - role: folders
+      tags: folders

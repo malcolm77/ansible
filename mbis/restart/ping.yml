@@ -1,0 +1,8 @@
+# a 'test' playbook for testing connection and credentials
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  tasks:
+  - ping:
+

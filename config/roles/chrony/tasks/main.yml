@@ -1,0 +1,12 @@
+- name: Copy chrony.conf file to the server
+  copy:
+    force: yes
+    src: chrony.conf
+    dest: /etc/
+    owner: root
+    group: root
+    mode: '0644'
+- name: Restart the Chronyd service
+  service:
+    name: chronyd 
+    state: restarted

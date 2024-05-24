@@ -1,0 +1,11 @@
+- name: Remove any domain setting if it exists
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: absent
+    regexp: '^%domain'
+
+- name: Add the correct setting
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    line: '%domain.domain.au\\tier1_linux_admin ALL=(ALL) ALL'
+    create: yes

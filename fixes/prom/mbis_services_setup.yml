@@ -1,0 +1,35 @@
+# a 'test' playbook for testing connection and credentials
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name : create roots scripts folder
+    ansible.builtin.file:
+      path: /root/scripts
+      state: directory
+
+  - name: copy script
+    ansible.builtin.copy:
+      src: mbis_services.sh
+      dest: /root/scripts/mbis_services.sh
+      mode: '0755'
+
+  - name: create output file (so i can fix permissions)
+    ansible.builtin.file:
+      path: /tmp/node/mbis_services.prom
+      state: touch
+      mode: u+rw,g+rw,o+r
+      owner: node_exporter
+      group: node_exporter
+
+  - name: create crontab file to run script
+    ansible.builtin.cron:
+      name: get mbis service status
+      minute: "*/5"
+      user: root
+      job: "/root/scripts/mbis_services.sh"

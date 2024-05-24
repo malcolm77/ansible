@@ -1,0 +1,26 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+
+  tasks:
+  - name: Install Packages
+    ansible.builtin.yum:
+      name:
+        - adcli 
+        - sssd
+        - authconfig
+      state: present
+
+  - name: Copy installer
+    copy:
+      src: join-ad.sh
+      dest: /tmp
+  - name: Copy kerberos file
+    copy:
+      src: krb5.conf
+      dest: /tmp/krb5.conf
+  - name: Copy sssd.conf file
+    copy:
+      src: sssd.conf
+      dest: /tmp/sssd.conf

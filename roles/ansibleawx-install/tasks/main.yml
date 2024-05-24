@@ -1,0 +1,112 @@
+---
+# tasks file for ansibleawx-install
+
+# Not finished as we have a ansible tower license !!!!!!
+
+- name: Test ping
+  ping:
+
+
+- name: Add repository docker
+  yum_repository:
+    name: docker-ce
+    description: "Docker repo"
+    baseurl: https://download.docker.com/linux/centos/8/x86_64/stable
+
+
+- name: Replace a localhost entry with our own
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: xxx.xxx.xxx.xxx repository.devops.in.idemia.com
+    state: present
+    owner: root
+    group: root
+    mode: '0644'
+# replace with DNS setting
+# https://confluence-mogl.devops.in.idemia.com/pages/viewpage.action?pageId=220125276
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/manually-configuring-the-etc-resolv-conf-file_configuring-and-managing-networking
+
+
+- name: Add repository rhel-8.4-for-x86_64-appstream-rpms
+  yum_repository:
+    name: rhel-8.4-for-x86_64-appstream-rpms
+    description: "rhel-8.4-for-x86_64-appstream-rpms"
+    baseurl: https://repository.devops.in.idemia.com/rhel/rhel-8.4-for-x86_64-appstream-rpms/
+
+
+- name: Add repository rhel-8.4-for-x86_64-baseos-rpms
+  yum_repository:
+    name: rhel-8.4-for-x86_64-baseos-rpms
+    description: "rhel-8.4-for-x86_64-baseos-rpms"
+    baseurl: https://repository.devops.in.idemia.com/rhel/rhel-8.4-for-x86_64-baseos-rpms/
+
+
+
+- name: Add repository rhel-8.4-for-x86_64-supplementary-rpms/
+  yum_repository:
+    name: rhel-8.4-for-x86_64-supplementary-rpms
+    description: "rhel-8.4-for-x86_64-supplementary-rpms"
+    baseurl: https://repository.devops.in.idemia.com/rhel/rhel-8.4-for-x86_64-supplementary-rpms/
+
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: /var/awxinstall/
+    state: directory
+    mode: '0755'
+
+
+
+- name: Container-tools:rhel8
+  dnf:
+    name: '@container-tools:rhel8'
+    state: present
+
+
+- name: Install minikube
+  yum:
+     name: https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm
+     disable_gpg_check: True # PGP should be instead of disalbing check
+     state: present
+
+- name: Make sure we have a 'wheel' group
+  group:
+    name: wheel
+    state: present
+
+
+
+- name: Add the user 'ansibleawx' with a bash shell, appending the group 'admins'
+  ansible.builtin.user:
+    name: ansibleawx
+    groups: wheel
+    append: yes
+    state: present
+    ansible.builtin.shell: /bin/bash
+
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+# - name : setup docker repo
+#   yum:
+#     name: yum-utils
+#     state: present
+
+# Increases size of home directory
+
+# - name: Start minikube
+#   shell : minikube start --driver=podman
+#   becomse: yes
+#   become_user: ansibleawx
+
+
+# Install curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+# https://github.com/ansible/awx-operator#basic-install
+

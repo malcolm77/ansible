@@ -1,0 +1,54 @@
+---
+# defaults file for mbis-app-install
+
+
+mbis_app_package_names2:
+  - psi-bis-etcw
+  - psi-bis-etc-*
+  - psi-bis-wf-java # where should this be installed
+
+
+mbis_package_names:
+  - bis-env
+  #- bis-haproxy   # to be removed pending testing
+  #- bis-conversion-tools  # to be removed pending testing
+  #- bis-pruem-java   # to be removed pending testing
+  #- bis-pcs      # purpose TBC
+  - bis-common-lib-migration
+  - bis-server-migration
+  - bis-common-lib
+  - bis-administration-service
+  - bis-cv
+  - bis-cva
+  - bis-dsm
+  - bis-etc
+  - bis-etcw
+  - bis-reports
+  - bis-server
+  - bis-wildfly
+  - bis-keycloak-wildfly-adapter
+  - bis-wf-java  # are both of these packages for wfs?
+  - bis-wfs-remote #Install as a depenency of bis-wf-java
+  - bis-ras
+  - bis-tools
+  - bis-help
+  - bis-cps
+  - psi-bis-fabric-workstation
+  - bis-wfmcl-service
+  - bis-batch-manager
+  - bis-user-preferences
+  - bis-list-manager
+  - bis-appbar
+  - bis-appbroker
+  - bis-rps
+  - bis-auth-db
+
+mbis_shutdown_package_service_names:
+  - { package_name: "bis-administration-service", service_name: "administration.service", shutdown_script: "AdministrationShutdown"}
+  - { package_name: "bis-cps", service_name: "cps.service" , shutdown_script: "CpsShutdown"}
+  - { package_name: "bis-cva", service_name: "cva.service" , shutdown_script: "CentralViewShutdown"}
+  - { package_name: "bis-dsm", service_name: "dsm.service" , shutdown_script: "DsmShutdown"}
+  - { package_name: "bis-wfmcl-service", service_name: "wfmcl.service" , shutdown_script: "WfmclShutdown"}
+
+
+

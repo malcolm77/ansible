@@ -1,0 +1,97 @@
+---
+
+# Can i run this script on updated, or just first install?
+
+# [bisora@bisapp keycloak]$ cd /home/bisora/scripts/schema/keycloak
+# [bisora@bisapp keycloak]$ ./create_keycloak_schema.sh -U system -P Xxxxxxxx
+
+# Not required for PDC/SDC, managed by Malcolm
+# - name: Configure same timeserver as AD
+#   become: true
+#   become_user: root
+#   tags: example1
+#   lineinfile:
+#     path: /etc/chrony.conf
+#     line: server xxx.xxx.xxx.xxx iburst
+#     state: present
+
+- name: Copy certificates directory to /bis/certificates/
+  ansible.builtin.copy:
+    src: "./files/certificates"
+    dest: "/opt"
+    owner: bis
+    group: bis
+    directory_mode:
+  become: true
+  become_user: root
+
+- name: "Deploy SSL Certificates - keycloak"
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  ansible.builtin.shell: /opt/bis/keycloak-config/scripts/configure-deployments.sh
+  ansible.builtin.command: sh /opt/certificates/scripts/link-certificates.sh keycloak
+  register: _results
+
+- ansible.builtin.debug:
+    var: _results
+
+- name: Check if create-bis-keycloak-credentials.sh file exists
+  ansible.builtin.stat:
+    path: "/opt/bis/keycloak/standalone/configuration/create-bis-keycloak-credentials.sh"
+  register: createbiskeycloakcredentialsfile
+
+- name: Download create-bis-keycloak-credentials.sh temporary fix for 5.12 issue (AU_CJ_ACIC-2412), TBD 5.13
+  ansible.builtin.copy:
+    src: ./files/keycloak512/create-bis-keycloak-credentials.sh
+    dest: /opt/bis/keycloak/standalone/configuration/create-bis-keycloak-credentials.sh
+    force: yes
+    owner: bis
+    mode: u+rwx
+  when: createbiskeycloakcredentialsfile.stat.exists
+
+  #su - bis -c 'chmod +x /opt/bis/keycloak/standalone/configuration/create-bis-keycloak-credentials.sh'
+  #echo -e "Morphotrak\nPrintrak\nMorphotrak\n" | su - bis -c '/opt/bis/keycloak/standalone/configuration/create-bis-keycloak-credentials.sh'
+
+- name: "Run create-bis-keycloak-credentials.sh"
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+                      # ansible.builtin.shell: /opt/bis/keycloak-config/scripts/configure-deployments.sh
+  ansible.builtin.shell: echo -e "Morphotrak\nPrintrak\nMorphotrak\n" | sh /opt/bis/keycloak/standalone/configuration/create-bis-keycloak-credentials.sh
+  args:
+    chdir: /opt/bis/
+  register: _results
+  ignore_errors: yes
+  when: createbiskeycloakcredentialsfile.stat.exists
+
+- ansible.builtin.debug:
+    var: _results
+
+
+- name: Copy ssl Realm import
+  ansible.builtin.copy:
+    src: "{{ KeycloakconfigimportPath }}"
+    dest: "/opt/bis/{{ KeycloakconfigimportPath | split('/') | last }}"
+    owner: bis
+    group: bis
+    directory_mode:
+  become: true
+  become_user: root
+
+
+- name: Import keycloak config, tail keycloak.log for Import finished successfully, monitor for 'Import finished successfully' for 60 seconds.
+  ansible.builtin.shell: '/opt/bis/scripts/KeycloakStartup import /opt/bis/{{ KeycloakconfigimportPath | split("/") | last }} && timeout 60 tail -f /opt/bis/log/keycloak.log | { sed "/Import finished successfully/ q" && kill $$ ;}'
+  become_user: bis
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  register: _results
+  #for a unknown reason checking for starting with PID was not working 3/08/2022.
+  failed_when: "'Import finished successfully' not in _results.stdout"
+  ignore_errors: yes
+
+- name: debug
+  ansible.builtin.debug:
+    var: _result.stdout_lines

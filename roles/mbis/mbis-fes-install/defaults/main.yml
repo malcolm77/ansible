@@ -1,0 +1,11 @@
+---
+# defaults file for mbis-fes-install
+
+mbis_package_names:
+  - bis-fes
+
+
+mbis_shutdown_package_service_names:
+ - { package_name: "bis-fes", service_name: "fes.service", shutdown_script: "FesShutdown"}
+
+

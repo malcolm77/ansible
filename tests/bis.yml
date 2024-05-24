@@ -1,0 +1,11 @@
+---
+- hosts: FES,DES,JBOSS,TERA,SSO
+  become: yes
+  gather_facts: yes 
+
+  tasks:
+  - name: Add myself to the bis group
+    ansible.builtin.user:
+      name: username
+      groups: bis
+      append: yes

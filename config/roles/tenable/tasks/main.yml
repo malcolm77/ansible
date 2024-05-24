@@ -1,0 +1,14 @@
+- name: Add user to AllowGroups
+  replace:
+    backup: yes
+    dest: /etc/ssh/sshd_config
+    regexp: '^(AllowGroups(?!.*\b svc_tenablesc \b).*)$'
+    replace: '\1 svc_tenablesc'
+- name: Add line to sudoers file
+  lineinfile:
+    path: /etc/sudoers
+    line: svc_tenable ALL=(root) ALL
+- name: Restart SSH
+  service:
+    name: sshd
+    state: restarted

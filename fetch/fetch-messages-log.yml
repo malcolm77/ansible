@@ -1,0 +1,14 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: Get messages log file
+    ansible.builtin.fetch:
+      src: /var/log/messages
+      dest: /home/username/PDC_Prod_RHEL_Ansible/fetch/logs
+

@@ -1,0 +1,16 @@
+# Fix the DNS settings of an interface
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: update packages
+    ansible.builtin.yum:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+      - sssd
+      - json-c
+      - dhcp-client 

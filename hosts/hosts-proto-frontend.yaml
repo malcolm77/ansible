@@ -1,0 +1,13 @@
+
+windows:
+  hosts:
+    dev4frontend:
+      ansible_host: xxx.xxx.xxx.xxx # Do not save to repo, provide as a extra variable when running
+  vars:
+    ansible_connection: winrm
+    host_backendip: xxx.xxx.xxx.xxx   # Do not save to repo, provide as a extra variable when running
+    host_keycloakip: xxx.xxx.xxx.xxx    # Do not save to repo, provide as a extra variable when running
+    host_adfsbisdcip: xxx.xxx.xxx.xxx   # Do not save to repo, provide as a extra variable when running
+    host_adfsmbisdevip: xxx.xxx.xxx.xxx # Do not save to repo, provide as a extra variable when running
+    host_wallpaper: "C:\\tools\\Wallpaper\\domain_Wallpaper_Qualification.jpg"
+

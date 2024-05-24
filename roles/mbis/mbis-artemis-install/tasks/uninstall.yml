@@ -1,0 +1,39 @@
+
+
+- name: Install artemis packages
+  block:
+  - name: "Removal of MBIS artemis STD packages - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: absent
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _artemisuninstallresult
+
+- debug :
+    var: _artemisuninstallresult
+
+- name: Populate service facts
+  service_facts:
+  when: _artemisuninstallresult
+
+# - name: Restart firewalld and apply runtime to permanent
+#   ansible.builtin.shell: |
+#     systemctl start firewalld
+#     firewall-cmd --runtime-to-permanent
+#     firewall-cmd --permanent --add-port=22/tcp -q
+#     firewall-cmd --reload
+#     firewall-cmd --reload
+#   become: true
+#   become_user: root
+#   when:
+#     - ansible_facts.services["firewalld.service"] is defined
+#     - _artemisuninstallresult
+
+- debug :
+    var: _results
+  when: _artemisuninstallresult

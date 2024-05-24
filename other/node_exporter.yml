@@ -1,0 +1,43 @@
+#node_exporter.yml
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Make sure node_exporter user exists
+    user:
+      name: node_exporter
+      state: present
+      createhome: no
+      shell: /usr/bin/false
+  - name: Copy executable file to the server and set owner and permission
+    copy:
+      src: /shared/node_exporter/node_exporter
+      dest: /usr/local/bin/node_exporter
+      owner: node_exporter
+      group: node_exporter
+      mode: '0755'
+  - name: Copy the service file and set owner and permission
+    copy:
+      src: /shared/node_exporter/node_exporter.service
+      dest: /etc/systemd/system/node_exporter.service
+      owner: root
+      group: root
+      mode: '0644'
+  - name: Start service 
+    service:
+      name: node_exporter.service
+      state: started
+      enabled: yes
+
+  - name: Add server to promethus config
+    ansible.builtin.replace:
+      path: /usr/local/bin/prometheus/prometheus.yml
+      regexp: "'SERVER02:9100']"
+      replace: "'SERVER02:9100','{{ inventory_hostname }}:9100']"
+    delegate_to: SERVER04
+
+  - name: restart prometheus service
+    ansible.builtin.service:
+      name: prometheus.service
+      state: restarted
+    delegate_to: SERVER04

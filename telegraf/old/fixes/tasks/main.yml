@@ -1,0 +1,16 @@
+- name: Update password job file interval to one day
+  ansible.builtin.lineinfile:
+    path: /etc/telegraf/telegraf.d/password_expiration.conf
+    regexp: '^  interval ='
+    line: '  interval = "86400s"'
+    
+- name: Update software job file interval to one day
+  ansible.builtin.lineinfile:
+    path: /etc/telegraf/telegraf.d/software_inventory.conf
+    regexp: '^  interval = '
+    line: '  interval = "86400s"'
+    
+- name: Restart service
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted

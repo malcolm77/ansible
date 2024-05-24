@@ -1,0 +1,94 @@
+---
+
+# If there are connection issues run the following to add SSH to the pulic firewall zone
+# firewall-cmd --add-service=ssh --zone=public
+
+# tasks file for mbis-app-install
+
+- name: "install mbis app packges, if errors remove custo package and try again."
+  block:
+  - name: "TEST - Installation of MBIS APP STD packages #1 - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name  }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - debug :
+      var: _result
+
+  - name: "TEST Installation of MBIS APP STD packages #2- Names: [{{ mbis_app_package_names2 }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_app_package_names2 }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - debug :
+      var: _result
+
+  rescue:
+  - name: PREVIOUS ERROR DURING INSTALL WAS A GOOD ERROR
+    ansible.builtin.command: echo GOOD ERROR
+    changed_when: false
+
+  - name: Remove custo packages to prevent conflicts
+    ansible.builtin.import_role:
+      name: mbis/mbis-app_custo-install
+      tasks_from: uninstall.yml
+
+  - name: Remove custo packages to prevent conflicts
+    ansible.builtin.import_role:
+      name: mbis/mbis-des_custo-install
+      tasks_from: uninstall.yml
+
+  - name: Remove custo packages to prevent conflicts
+    ansible.builtin.import_role:
+      name: mbis/mbis-des_custo_mig-install
+      tasks_from: uninstall.yml
+
+  - name: "Rescue - Installation of MBIS APP STD packages #1 - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name  }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - debug :
+      var: _result
+
+  - name: "Rescue Installation of MBIS APP STD packages #2- Names: [{{ mbis_app_package_names2 }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_app_package_names2 }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name  }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - debug :
+      var: _result
+
+

@@ -1,0 +1,3 @@
+- name: Start Tera
+  become_user: bis
+  ansible.builtin.command: /opt/bis/scripts/TeraMigStartup

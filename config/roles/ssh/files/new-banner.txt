@@ -1,0 +1,21 @@
+Acknowledgement of obligations in respect of National Automated Fingerprint Identification System (domain)
+
+Acknowledgement of obligations in respect of National Automated Fingerprint Identification System (domain), domain contains finger and palm print information. Information provisioned through domain is ‘ACC information’ as defined in the Australian Crime Commission Act 2002 (Cth) (ACC Act). Further, domain is a ‘national policing information’ (NPI) system and certain information held under domain is regarded as NPI under the ACC Act. Unauthorised use, access and disclosure of any information provisioned through domain and domain computer facilities is strictly prohibited and may constitute a criminal offence.
+
+By logging into this server, I acknowledge that:
+• I have obtained written authorisation to use domain and domain computer facilities.
+• My use of domain and domain computer facilities must be within the scope of the authorisation and will be logged, monitored and audited, and I may be selected for random auditing.
+• I must not store any information in domain or domain computer facilities which may be offensive or cause embarrassment to any person.
+• I must not alter domain or domain computer facilities whether through the installation of any software, hardware or otherwise.
+• I am aware of and must comply with ACIC policies, procedures and relevant legislation regarding access to, 
+  use and disclosure of information provisioned through domain and domain computer facilities, in particular section 51(2) of the ACC Act.
+• I must comply with all requirements concerning the use of USB drives (however described) for the purpose of using domain and domain computer facilities.
+• I must comply with any additional obligations of my agency relating to domain and domain computer facilities.
+
+By logging into this server, I agree to:
+• Maintain sufficient records pertaining to my use of domain and domain computer facilities that adequately satisfy any auditing requirements of my agency.
+• Protect information provisioned through domain from unauthorised access and disclosure including through the protection of my password and logging out of domain when not in use.
+
+All relevant policies, procedures and legislation are available by contacting the service desk on 1300 222 468. 
+Any further queries may be directed to servicedesk@acic.gov.au. 
+

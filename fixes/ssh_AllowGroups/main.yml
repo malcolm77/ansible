@@ -1,0 +1,23 @@
+# Fix SSH so that the AllowGroups line is correct
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: Remove any current AllowGroups setting
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      state: absent
+      regexp: '^AllowGroups'
+  
+  - name: Add the correct AllowGroups line
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      line: 'AllowGroups ssh tier1_linux_admin svc_tenablesc svc_ansible'
+      create: yes
+  
+  - name: Restart SSH
+    service:
+      name: sshd
+      state: restarted

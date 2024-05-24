@@ -1,0 +1,5 @@
+[SERVER02]
+name=SERVER02 Red Hat 7.7 Update Server
+baseurl=http://xxx.xxx.xxx.xxx/repo/rhel-7-server-rpms/
+gpgcheck=0
+enabled=1

@@ -1,0 +1,25 @@
+---
+#####
+# Configure the MBIS servers
+#####
+
+- name: Configure the MBIS servers
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  roles:
+    - role: lvolume
+      tags: lvolume
+
+    - role: filesystem
+      tags: filesystem
+
+#    - role: fstab (no longer required, done by mount role)
+#      tags: fstab
+ 
+    - role: folders
+      tags: folders
+
+    - role: mount
+      tags: mount

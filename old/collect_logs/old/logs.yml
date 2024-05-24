@@ -1,0 +1,24 @@
+---
+
+- name: Collect All Logs
+  gather_facts: yes
+  become: yes
+  become_user: bis
+  hosts: all
+  # serial: 1
+  ignore_errors: yes
+
+  tasks:
+    - name: Get all MBIS Logs
+      block:
+        - name: Find recent log files
+          find:
+            path: /opt/bis/log
+            patterns: "*.log"
+          register: mbislogs
+        
+        - name: Copy log files to Ansible server
+          ansible.builtin.fetch:
+            src: "{{ item.path }}"
+            dest: /all_logs/
+          with_items: "{{ mbislogs.files }}"

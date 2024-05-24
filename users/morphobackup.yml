@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: create morphobackup user
+    user:
+      name: morphobackup
+      password: $6$morphobackup$ZB6O.bcKkDmTIiPTdShUe7pQr11DKj2XveSobxIUo12NaCUp0bV.Retkefrm93ZEHVyS.BS8NSW9qiPE6irsC1

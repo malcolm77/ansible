@@ -1,0 +1,35 @@
+---
+
+- name: Create licenses directory if it does not exist
+  ansible.builtin.file:
+    path: /opt/bis/jboss/standalone/configuration/sessionmanager/central1/licenses
+    state: directory
+    mode: '0755'
+    owner: bis
+    group: bis
+  become: true
+  become_user: bis
+
+- name: Check if licensefile exists
+  ansible.builtin.stat:
+    path: "/opt/bis_licensebackup/licenses"
+  register: licensefile
+
+
+- name: Restore license files from bis_licensebackup to bis
+  ansible.builtin.copy:
+    src: /opt/bis_licensebackup/licenses/
+    dest: /opt/bis/jboss/standalone/configuration/sessionmanager/central1/licenses
+    remote_src: yes
+    owner: bis
+    group: bis
+    backup: yes
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: _result
+  when: licensefile.stat.exists
+
+- ansible.builtin.debug:
+    var: _result
+

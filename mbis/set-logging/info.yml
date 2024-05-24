@@ -1,0 +1,9 @@
+---
+
+- name: Set FES to INFO 
+  gather_facts: yes
+  become: yes
+  hosts: DES,FES,JBOSS,TERA,SERVER07
+
+  roles:
+    - role: info 

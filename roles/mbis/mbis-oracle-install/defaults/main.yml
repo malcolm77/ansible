@@ -1,0 +1,7 @@
+---
+# defaults file for mbis-oracle-install
+
+mbis_oracle_generic_package_names:
+  - bis-oracle-scripts
+  - bis-oracle-os-scripts-19c
+  - bis-oracle-19c-dbca

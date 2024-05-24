@@ -1,0 +1,34 @@
+---
+# This playbook is used to add a new mailbox to domainMAIL server
+- name: Create new mailbox
+  hosts: mailservers 
+  become: true
+  gather_facts: true
+  vars_prompt:
+    - name: mailbox_user
+      prompt: "Enter the username for the mailbox: "
+      private: no
+    - name: mailbox_uid
+      prompt: "Enter the UID for the mailbox user: "
+      private: no
+  tasks:
+    - name: Load the vault
+      include_vars: /home/svc_ansible/playbooks/MAIL/vault.yml
+    - debug: 
+       msg: 
+       - "This will create a mailbox based on the following:"
+       - "Mailserver: {{ ansible_hostname }}"
+       - "Mailbox: {{ mailbox_user }}"
+       - "UID: {{ mailbox_uid }}"
+       - "Shell: /sbin/nologin"
+       - "Comment: Livescan Mailbox"
+    - pause:
+       prompt: "Do you wish to continue? Press Ctrl-C then A to abort. Otheriwse press Enter."
+       echo: no
+    - name: Create new mailbox
+      user:
+        password: "{{ vault_defaultpwd }}"
+        name: "{{ mailbox_user }}"
+        comment: "Livescan Mailbox"
+        shell: /sbin/nologin
+        uid: "{{ mailbox_uid }}"

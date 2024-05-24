@@ -1,0 +1,27 @@
+---
+# handlers file for mbis-sso-install
+
+
+- name: Mbis shutdown commands
+  include_tasks: handlers/shutdown.yml
+  listen: "shutdown mbis"
+
+- name: Mbis Startup commands
+  include_tasks: handlers/startup.yml
+  listen: "startup mbis"
+
+- name: Mbis Post Install commands
+  include_tasks:  handlers/postinstall.yml
+  listen: "postinstall mbis"
+
+
+- name: Import Custo handlers for uninstall
+  include_tasks: mbis/mbis-app_custo-install/handlers/main.yml
+
+
+
+# - name: Notify Keycloak_postinstall, after general 'postinstall mbis' handlers.
+#   ansible.builtin.command:  echo Notify Keycloak_postinstall
+#   notify: Keycloak_postinstall
+#   listen: Notify Keycloak_postinstall
+

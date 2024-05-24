@@ -1,0 +1,33 @@
+---
+- name: Collect Logs
+  gather_facts: yes
+  become: yes
+  hosts: DES,FES,JBOSS,TERA,SERVER07
+
+  tasks:
+    - name: Collect fes.log from all machines
+      ansible.builtin.fetch:
+        src: /opt/bis/log/fes.log
+        dest: /tmp/logs/
+
+    - name: Collect des.log from all machines
+      ansible.builtin.fetch:
+        src: /opt/bis/log/des.log
+        dest: /tmp/logs/
+      delegate_to: "{{ item }}"
+      with_items:
+        - SERVER01
+        - SERVER02
+        - SERVER03
+        - SERVER04
+
+    - name: Collect tera.log from all machines
+      ansible.builtin.fetch:
+        src: /opt/bis/log/tera.log
+        dest: /tmp/logs/
+
+    - name: Collect fesmig.log from all machines
+      ansible.builtin.fetch:
+        src: /opt/bis/log/fesmig.log
+        dest: /tmp/logs/
+      delegate_to: SERVER07

@@ -1,0 +1,77 @@
+---
+
+# NOTE, database scripts are managed in the build, and update will require a redeployment.
+
+- name: Clear database
+  hosts: mbis
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  pre_tasks:
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  tasks:
+
+    - ansible.builtin.import_role:
+        name: mbis-notify
+    - ansible.builtin.import_role:
+        name: mbis-cleanDB
+    - ansible.builtin.import_role:
+        name: mbis-createjarxmltriggers
+
+  #Importing other roles to handle shutdown and startup triggers.
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-app-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-artemis-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-des-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-fes-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-oracle-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-sso-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name:  mbis/mbis-tera-install
+        tasks_from: empty.yml
+
+  post_tasks:
+
+  - name: Send startup mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "prestartup mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  - name: Send startup mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "startup mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  vars:
+    - NotifyMessage: Database is about to be cleaned in 2min, please save your work.
+    - ansible_python_interpreter: /usr/bin/python3
+
+
+

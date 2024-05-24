@@ -1,0 +1,14 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+  - name: get service facts
+    service_facts:
+
+  - name: try to work out how the access the service
+    fail:
+      msg: ------------------ agent not running --------------------
+    when: ansible_facts.services["sssd.service"] is not defined
+    #debug:
+    #  var: ansible_facts.services["mcafee.ma.service"]

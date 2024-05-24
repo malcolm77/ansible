@@ -1,0 +1,18 @@
+[<Server>-BaseOS]
+name=RHEL 8 BaseOS
+enabled=1
+gpgcheck=1
+baseurl=http://<Server>:8889/repo/rhel-8-for-x86_64-baseos-rpms
+
+[<Server>-AppStream]
+name=RHEL 8 AppStream
+enabled=1
+gpgcheck=1
+baseurl=http://<Server>:8889/repo/rhel-8-for-x86_64-appstream-rpms
+
+[<Server>-HA]
+name=RHEL 8 HA
+enabled=0
+gpgcheck=1
+baseurl=http://<Server>:8889/repo/rhel-8-for-x86_64-highavailability-rpms
+

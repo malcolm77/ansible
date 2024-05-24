@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - shell: date
+      register: shell_output
+    
+    - debug:
+        var: shell_output.stdout_lines

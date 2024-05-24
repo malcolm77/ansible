@@ -1,0 +1,81 @@
+---
+# tasks file for mbis-install-custo
+
+- name: "Test if upgrade is required"
+  ansible.builtin.shell: |
+    rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx{{repoPath}}/release/backend/Custo/bis-customization-dbm-oracle-mbis.rpm --test
+    rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx{{repoPath}}/release/backend/Custo/bis-customization-backend-mbis.rpm --test
+    rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx{{repoPath}}/release/backend/Custo/bis-customization-des-mbis.rpm --test
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: upgradeRequiredResult
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: upgradeRequiredResult
+
+
+
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: "remove bis-customization-backend"
+  ansible.builtin.shell: rpm --erase --justdb --allmatches bis-customization-backend
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: result
+  # when:
+  #   - "'bis-customization-backend' in ansible_facts.packages"
+  # When command for skipping doesn't seem to work,
+
+- name: "remove bis-customization-des"
+  ansible.builtin.shell: rpm --erase --justdb --allmatches bis-customization-des
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: result
+  # when:
+  #   - "'bis-customization-des' in ansible_facts.packages"
+
+- name: "remove bis-customization-dbm-oracle"
+  ansible.builtin.shell: rpm --erase --justdb --allmatches bis-customization-dbm-oracle
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: result
+  # when:
+  #   - "'bis-customization-dbm-oracle' in ansible_facts.packages"
+
+
+
+- name: "Install MBIS custo packages "
+  ansible.builtin.shell: |
+    rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx{{repoPath}}/release/backend/Custo/bis-customization-dbm-oracle-mbis.rpm
+    rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx{{repoPath}}/release/backend/Custo/bis-customization-backend-mbis.rpm
+    rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx{{repoPath}}/release/backend/Custo/bis-customization-des-mbis.rpm
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: result
+  # when: upgradeRequiredResult is failed
+  # rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx{{repoPath}}/release/backend/Custo/bis-customization-des-mig-mbis.rpm"
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+- name: Copy config files
+  ansible.builtin.copy:
+    src: "{{ EnvironmentConfigurationPath }}"  # loaded from inventory
+    dest: /opt/bis/
+    remote_src: yes
+    owner: bis
+    group: bis
+  register: result
+
+
+

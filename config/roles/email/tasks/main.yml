@@ -1,0 +1,20 @@
+---
+- name: Install the mail packages
+  yum:
+    name: 
+      - mailx
+      - postfix
+    state: present
+
+- name: Copy properly configured main.cf file
+  copy:
+    src: main.cf
+    dest: /etc/postfix/main.cf
+    owner: root 
+    group: root
+    mode: '0644' 
+
+- name: Start Postfix service
+  service:
+    name: postfix
+    state: started

@@ -1,0 +1,16 @@
+<#
+Script to revert Virtual Machine to desired snapshot
+Usage: vSphereRevert.ps1 [VIServer IP] [username] [password] [target machine] [desired snapshot]
+#>
+$VIServer = $args[0]
+$user = $args[1]
+$pass = $args[2]
+$machine = $args[3]
+$snapshot = $args[4]
+
+
+Connect-VIServer $VIServer -User $user -Pass $pass
+Set-VM $machine -Snapshot $snapshot -Confirm:$false
+
+# Connect-VIServer xxx.xxx.xxx.xxx -User $user -Pass $pass
+# Set-VM "Integration - Gold Image w/Ansible" -Snapshot snap1 -Confirm:$false

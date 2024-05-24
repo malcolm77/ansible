@@ -1,0 +1,61 @@
+---
+
+- name: Change domain on backend
+  hosts: mbis
+  remote_user: root
+
+  vars:
+    - ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+
+  - name:  Copy folder to /ssl_scripts (results in /ssl_scripts)
+    copy:
+      src: ./files/mbis/ssl_scripts/
+      dest: /ssl_scripts
+      force: yes
+    become: true
+    become_user: root
+
+  - name:  run script apply certs
+    #shell: python3 /ssl_scripts/apply_signed_certs.py
+    ansible.builtin.shell: python3 /ssl_scripts/apply_signed_certs.py /ssl_scripts/support_files/certnew.p7b /ssl_scripts/support_files/private.key
+    register: _results
+    become: true
+    become_user: root
+    args:
+      chdir: /ssl_scripts/
+
+  - ansible.builtin.debug:
+      var: _results
+
+  # - name:  run script
+  #   # ansible.builtin.shell: apply_signed_certs.py <path_to_p7b> <path_to_private_key>
+  #   # ansible.builtin.shell: python3 --version
+  #   ansible.builtin.shell: python3 /ssl_scripts/update_hostnames.py  mbis-dev.idemia.com nextgen.nafis
+  #   # ansible.builtin.shell: python3 /ssl_scripts/update_hostnames.py -h
+  #   args:
+  #     chdir: /ssl_scripts/
+  #   register: _results
+  #   become: true
+  #   become_user: root
+
+  # - ansible.builtin.debug:
+  #     var: _results
+
+  # - name: Import keycloak config, tail keycloak.log for Import finished successfully, monitor for 'Import finished successfully' for 60 seconds.
+  #   ansible.builtin.shell: '/opt/bis/scripts/KeycloakStartup import {{ KeycloakconfigimportPath }} && timeout 60 tail -f /opt/bis/log/keycloak.log | { sed "/Import finished successfully/ q" && kill $$ ;}'
+  #   become_user: bis
+  #   become: true
+  #   become_method: sudo   # Become method being used when manually running scripts
+  #   become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  #   register: _result
+  #   failed_when: "'Keycloak starting with PID' not in result.stdout"
+
+
+  # - name: AllStartup
+  #   ansible.builtin.command: /opt/bis/scripts/AllStartup
+  #   become_user: bis
+  #   become: true
+  #   become_method: sudo   # Become method being used when manually running scripts
+  #   become_flags: '-i'  # adding -l to load the user profile which includes environment variables.

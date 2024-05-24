@@ -1,0 +1,500 @@
+---
+
+
+- name: Install MBIS common
+  hosts: mbis_jboss, mbis_des, mbis_fes, mbis_SSO, mbis_tera
+  remote_user: root
+  # become: true
+  # become_user: bis
+  # become_method: sudo   # Become method being used when manually running scripts
+  # become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars_prompt:
+
+  vars:
+
+  tasks:
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+
+  - name: Remove java 1.8.0
+    ansible.builtin.yum:
+      name: "*java-1.8.0-openjdk*"
+      state: absent
+      disablerepo: "*"
+      enablerepo: "{{ mbis_common_repository_name }}"
+    become: true
+    become_user: root
+
+
+  - name: Install amazon Corretto 11 jdk
+    ansible.builtin.yum:
+      name: java-11-amazon-corretto-devel
+      state: present
+      disablerepo: "*"
+      enablerepo: "{{ mbis_common_repository_name }}"
+    register: _results
+    become: true
+    become_user: root
+
+
+  - name: Update Java Alteratives Correct java version selected
+    ansible.builtin.command: alternatives --set java /usr/lib/jvm/java-11-amazon-corretto/bin/java
+    when: _results
+    become: true
+    become_user: root
+
+
+  - name: "Create a directory if it does not exist"
+    ansible.builtin.file:
+      path: /usr/java
+      state: directory
+      mode: '0755'
+    when: "java_devel|default(true)"
+    become: true
+    become_user: root
+
+  - name: "Create a symbolic link jdk"
+    ansible.builtin.file:
+      src: /usr/lib/jvm/java-11-amazon-corretto/
+      dest: "{{ item }}"
+      owner: root
+      group: root
+      state: link
+    with_items:
+      - /usr/java/jdk
+      - /usr/java/jdk64
+    when: "java_devel|default(true)"
+    ecome: yes
+    become_user: root
+
+
+  - name: Remove symbolic link for jre
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /usr/java/jre
+      - /usr/java/jre64
+    when: "java_devel|default(true)"
+    become: true
+    become_user: root
+
+- name: Install SSO
+  hosts: mbis_SSO
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: su   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  pre_tasks:
+
+  - name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+    ansible.builtin.pause:
+    when: Environment_lock != "no"
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  tasks:
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+  - ansible.builtin.import_role:
+      name: mbis/mbis-sso-install
+
+  # - name: Send postinstall mbis notificaiton
+  #   ansible.builtin.command: echo "notify postinstall"
+  #   notify: "postinstall mbis"
+
+  post_tasks:
+
+  # - name: Flush handlers, Notify outstanding handlers (Keycloak)
+  #   ansible.builtin.meta: flush_handlers
+
+  # - name: Send startup mbis notificaiton
+  #   ansible.builtin.command: echo "notify startup"
+  #   notify: "startup mbis"
+
+  # - name: Flush handlers
+  #   ansible.builtin.meta: flush_handlers
+
+
+- name: Install WMS, WFS, ARS
+  hosts: mbis_wms
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: su   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  pre_tasks:
+
+  - name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+    ansible.builtin.pause:
+    when: Environment_lock != "no"
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  tasks:
+  # - ansible.builtin.import_role:
+  #     name: mbis/mbis-etchosts
+  #     tasks_from: creatembis.yml
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+  - ansible.builtin.import_role:
+      name: mbis/mbis-wms-install
+  - ansible.builtin.import_role:
+      name: mbis/mbis-wfs-install
+
+
+  # - name: Send postinstall mbis notificaiton
+  #   ansible.builtin.command: echo "notify postinstall"
+  #   notify: "postinstall mbis"
+
+  post_tasks:
+
+
+  # - name: Send startup mbis notificaiton
+  #   ansible.builtin.command: echo "notify startup"
+  #   notify: "startup mbis"
+
+  # - name: Flush handlers
+  #   ansible.builtin.meta: flush_handlers
+
+
+- name: Install MBIS Apps (JBOSS, WFS, WMS, ARS)
+  hosts: mbis_jboss, mbis_wms
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: su   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars_prompt:
+
+    - name: Bisora_system_password
+      prompt: Enter the Authentication password for bisora, used during database migration task
+      private: yes
+      default: "Printrak"
+
+  vars:
+  # See ./group_vars
+
+  pre_tasks:
+
+  - name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+    ansible.builtin.pause:
+    when: Environment_lock != "no"
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  # # JBOSS only. (tick )
+  # - name: Check if DeployWars.sh file exists
+  #   ansible.builtin.stat:
+  #     path: "/opt/bis/scripts/DeployWars.sh"
+  #   register: DeployWarsfile
+
+  # - name: "unload wars to allow upgrade"
+  #   ansible.builtin.shell: "/opt/bis/scripts/DeployWars.sh -u"
+  #   become: true
+  #   become_user: bis
+  #   become_method: su   # Become method being used when manually running scripts
+  #   become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  #   register: _result
+  #   when: DeployWarsfile.stat.exists
+
+  tasks:
+
+  # tempoaryly removed as module is not installed by default in Ansible 2.12.2
+  # - ansible.builtin.import_role:
+  #     name: mbis-resize-opt
+
+  # Repository role is also included as a dependency of other installs, It is listed here for visibility.
+  # - ansible.builtin.import_role:
+  #     name: mbis/mbis-etchosts
+  #     tasks_from: creatembis.yml
+  # - ansible.builtin.import_role:
+  #     name: mbis/mbis-etchosts
+  #     tasks_from: createkeycloak.yml
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-app-install
+  #  DB install setup tasks have not be created, packages are still required to support existing installed databases.
+  - ansible.builtin.import_role:
+      name: mbis/mbis-oracle-install
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-artemis-install
+      tasks_from: uninstall.yml
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-wms
+
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-app_custo-install
+  - ansible.builtin.import_role:
+      name: mbis/mbis-oracle_custo-install
+  - ansible.builtin.import_role:
+      name: mbis/mbis-elk_custo
+
+  # - name: Send postinstall mbis notificaiton
+  #   ansible.builtin.command: echo "notify postinstall"
+  #   notify: "postinstall mbis"
+
+  post_tasks:
+
+  # for new databases run create_author_schema.sh
+
+  ####
+  # rubecome_method: sudoh as bisora
+  ####
+  # - name: Run /home/bisora/scripts/schema/update-schemas.sh
+  #   ansible.builtin.command: "/home/bisora/scripts/schema/update-schemas.sh -U SYSTEM -P {{ bisora_system_password }}"
+  #   become: true
+  #   become_user: bisora
+  #   become_method: su
+  #   become_flags: '-l'
+  #   register: _results
+  #   args:
+  #     chdir: /home/bisora/scripts/schema
+
+  # - ansible.builtin.debug:
+  #     var: _results
+
+  # - name: Check if DeployWars.sh file exists
+  #   ansible.builtin.stat:
+  #     path: "/opt/bis/scripts/DeployWars.sh"
+  #   register: DeployWarsfile
+
+  # - name: "load wars to decrease startup time"
+  #   ansible.builtin.shell: "/opt/bis/scripts/DeployWars.sh -d"
+  #   become_user: bis
+  #   become: true
+  #   become_method: su   # Become method being used when manually running scripts
+  #   become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  register: result
+  #   register: _result
+  #   when: DeployWarsfile.stat.exists
+
+  - name: Import licesnse
+    ansible.builtin.import_role:
+      name: mbis/mbis-license
+      tasks_from: restore.yml
+
+  # - name: Send prestartup mbis notificaiton
+  #   ansible.builtin.command: echo "notify prestartup"
+  #   notify: "prestartup mbis"
+
+  # - name: Flush handlers
+  #   ansible.builtin.meta: flush_handlers
+
+  # - name: Send startup mbis notificaiton
+  #   ansible.builtin.command: echo "notify startup"
+  #   notify: "startup mbis"
+
+  # - name: Flush handlers
+  #   ansible.builtin.meta: flush_handlers
+
+
+- name: Install DES
+  hosts: mbis_des
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: su   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  pre_tasks:
+
+  - name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+    ansible.builtin.pause:
+    when: Environment_lock != "no"
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  tasks:
+  # - ansible.builtin.import_role:
+  #     name: mbis/mbis-etchosts
+  #     tasks_from: creatembis.yml
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+  - ansible.builtin.import_role:
+      name: mbis/mbis-des-install
+  - ansible.builtin.import_role:
+      name: mbis/mbis-des_custo-install
+  - ansible.builtin.import_role:
+      name: mbis/mbis-des_custo_mig-install
+
+  # - name: Send postinstall mbis notificaiton
+  #   ansible.builtin.command: echo "notify postinstall"
+  #   notify: "postinstall mbis"
+
+  post_tasks:
+
+  # - name: Send startup mbis notificaiton
+  #   ansible.builtin.command: echo "notify startup"
+  #   notify: "startup mbis"
+
+  # - name: Flush handlers
+  #   ansible.builtin.meta: flush_handlers
+
+- name: Install FES
+  hosts: mbis_fes
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: su   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  pre_tasks:
+
+  - name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+    ansible.builtin.pause:
+    when: Environment_lock != "no"
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  tasks:
+  # - ansible.builtin.import_role:
+  #     name: mbis/mbis-etchosts
+  #     tasks_from: creatembis.yml
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+  - ansible.builtin.import_role:
+      name: mbis/mbis-fes-install
+
+  # - name: Send postinstall mbis notificaiton
+  #   ansible.builtin.command: echo "notify postinstall"
+  #   notify: "postinstall mbis"
+
+  post_tasks:
+
+  # - name: Send startup mbis notificaiton
+  #   ansible.builtin.command: echo "notify startup"
+  #   notify: "startup mbis"
+
+  # - name: Flush handlers
+  #   ansible.builtin.meta: flush_handlers
+
+
+
+- name: Install Tera
+  hosts: mbis_tera
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: su   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  pre_tasks:
+
+  - name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+    ansible.builtin.pause:
+    when: Environment_lock != "no"
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  tasks:
+  # - ansible.builtin.import_role:
+  #     name: mbis/mbis-etchosts
+  #     tasks_from: creatembis.yml
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+  - ansible.builtin.import_role:
+      name: mbis/mbis-tera-install
+
+  # - name: Send postinstall mbis notificaiton
+  #   ansible.builtin.command: echo "notify postinstall"
+  #   notify: "postinstall mbis"
+
+  post_tasks:
+
+
+  # - name: Send startup mbis notificaiton
+  #   ansible.builtin.command: echo "notify startup"
+  #   notify: "startup mbis"
+
+  # - name: Flush handlers
+  #   ansible.builtin.meta: flush_handlers
+
+
+
+
+

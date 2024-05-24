@@ -1,0 +1,16 @@
+---
+# defaults file for mbis-des-install
+
+
+
+mbis_des_package_names2:
+  - psi-bis-des-config
+
+mbis_package_names:
+  - bis-des
+  - bis-des-config
+
+mbis_shutdown_package_service_names:
+ - { package_name: "bis-des", service_name: "des.service", shutdown_script: "DesShutdown"}
+
+

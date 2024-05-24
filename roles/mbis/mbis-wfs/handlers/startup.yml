@@ -1,0 +1,23 @@
+---
+
+- name: Start Wfs, monitor logs for " ERROR " for 30 seconds
+  ansible.builtin.command: /opt/bis/scripts/WfsStartup  && timeout 30 tail -f /opt/bis/log/wfs.log
+  become_user: bis
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  register: result
+  failed_when: "'Running with PID' not in result.stdout or ' ERROR ' in result.stdout"
+
+# && timeout 30 tail -f /opt/bis/log/wfs.log | { sed "/Import finished successfully/ q" ;}'
+# workflow verificaiton TBC
+
+
+- name: Start Ars
+  ansible.builtin.command: /opt/bis/scripts/ArsStartup
+  become_user: bis
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  register: result
+  failed_when: "'Running with PID' not in result.stdout"

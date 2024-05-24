@@ -1,0 +1,22 @@
+---
+# Setup various compentents of a server,
+# depending on what tag is given
+#
+# ansible-playbook -l SERVER, site.yml --tags=hosts
+
+- name: Add account to bis group
+  gather_facts: yes
+  become: yes
+  hosts: all
+  serial: 1
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+    - name: Add user to group
+      ansible.builtin.user:
+        name: svc_ansible
+        groups: bis
+        append: true
+

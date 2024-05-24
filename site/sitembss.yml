@@ -1,0 +1,986 @@
+---
+#
+# - Name: sitembssyml
+# - Description:
+#  This playbook aims at installing requried components for mbss
+
+
+- name: Install mbss
+  hosts: mbss
+  remote_user: root
+  # become: true
+  # become_user: mbss
+  # become_method: sudo   # Become method being used when manually running scripts
+  # become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars:
+    java_openjdk_version: "1.8.0"
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_mbss_repoURL: "http://xxx.xxx.xxx.xxx/MBSS_7.1.0"
+    custo_mbssConfig_path: "Configured in Environment group Vars"
+
+    #### MBSS Partition count definition
+    mbss_teragrid_partition_count:
+      persons: 12
+      latents: 12
+
+
+  tasks:
+
+  - name: "stop zookeeper-server"
+    service:
+      name: zookeeper-server
+      state: stopped
+    when: ansible_facts.services["zookeeper-server.service"] is defined
+
+  - name: "stop rabbitmq-server"
+    service:
+      name: rabbitmq-server
+      state: stopped
+    when: ansible_facts.services["rabbitmq-server.service"] is defined
+
+  - name: "stop of adminDaemon service"
+    service:
+      name: adminDaemon
+      state: stopped
+    when: ansible_facts.services["adminDaemon.service"] is defined
+
+
+  - ansible.builtin.import_role:
+      name: mbis/mbis-mbis-repository
+
+  # The guide is to remove other versions of of java, this was not done
+  # On a AIO server multiprotect, and rabbitmq appear to use java-11.
+  # Becuase other versions of java were inuse they were not removed.
+
+
+  - name: "Install OpenJDK {{ Approved_Release_Version }} "
+    vars:
+     - Approved_Release_Version: xxx.xxx.xxx.xxx.9-4.el8_3 # must match what is in the repo to prevent conflicts between versions
+    yum:
+      name: "{{ item }}-{{ Approved_Release_Version }} "
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbsscots_repository_name }}"
+      allow_downgrade: true
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    with_list:
+      - java-11-openjdk
+      - java-11-openjdk-headless
+    register: _results
+
+  - debug:
+      var: _results
+
+
+
+  # Create zookeeper linux group
+  # "Installation of Zookeeper"
+
+
+  - name: Check if {{ groupname }}" exist and crete it with gid["{{ groupid }}"] if it doesn't
+    vars:
+      groupname: zookeeper
+      groupid: 515
+    block:
+      - name: TEST - check if "{{ groupname }}" group exists
+        ansible.builtin.getent:
+          database: group
+          key: "{{ groupname }}"
+
+    rescue:
+      - name: Create group["{{ groupname }}"] exists with correct gid["{{ groupid }}"]
+        ansible.builtin.group:
+          name: "{{ groupname }}"
+          state: present
+          gid: "{{ groupid }}"
+
+
+  - name: Check if user ["{{ username }}"] exist and crete it with uid ["{{ userid }}"] if it doesn't
+    vars:
+      username: zookeeper
+      userid: 515
+    block:
+      - name: TEST - check if user ["{{ username }}"] group exists
+        ansible.builtin.getent:
+          database: passwd
+          key: "{{ username }}"
+
+      - name: Modify user ["{{ username }}"]
+        user:
+          name: "{{ username }}"
+          group: zookeeper
+          comment: Zookeeper
+          shell: /sbin/nologin # updated from /bin/bash
+          createhome: false
+          home: /var/lib/zookeeper
+          state: present
+
+    rescue:
+      - name: Create user ["{{ username }}"]  exists with correct uid ["{{ userid }}"]
+        user:
+          name: "{{ username }}"
+          uid: "{{ userid }}"
+          group: zookeeper
+          comment: Zookeeper
+          shell: /sbin/nologin # updated from /bin/bash
+          createhome: false
+          home: /var/lib/zookeeper
+          state: present
+
+
+  - name: "Installation of ZOOKEEPER cots - Name/Version"
+    yum:
+      name: "mbss-zookeeper-server"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbsscots_repository_name }}"
+    become: true
+    become_user: root
+
+
+  # Configure Zookeeper
+  # Changes compared to Integration AIO
+  # #leaderServes=no -> leaderServes=yes
+  # admin.serverPort=2180 -> removed
+  # admin.enableServer=true -> removed
+  - name: "Installation of ZOOKEEPER configuration"
+    template:
+      src: zoo.cfg.j2
+      dest: /etc/zookeeper/conf/zoo.cfg
+      owner: root
+      group: root
+      mode: 0644
+      backup: yes
+    notify: "restart zookeeper-server"
+
+  - name: "Installation of ZOOKEEPER node id"
+    template:
+      src: myid.j2
+      dest: /var/lib/zookeeper/myid
+      owner: zookeeper
+      group: zookeeper
+      mode: 0644
+      backup: yes
+    when: groups['zookeepers']|length > 1
+    notify: "restart zookeeper-server"
+
+  - name: "Force zookeeper restart"
+    ansible.builtin.meta: flush_handlers
+
+  - name: "Check - Zookeeper-server service status = started"
+    service:
+      name: zookeeper-server
+      enabled: yes
+      state: started
+
+
+
+  # - name: "Installation of RabbitMQ"
+  #   hosts: rabbitmq
+  #   gather_facts: yes
+  #   become: true
+  #   tags:
+  #     - all
+  #     - rmq
+  #     - rabbitmq
+  #   roles:
+  #     - role: products/rabbitmq
+
+
+  # Define RabbitMQ node-name
+  - name: " Definition of rabbitmq_nodename"
+    set_fact:
+      rabbitmq_nodename: "rabbit@{{ rabbitmq_nodename_hostname|default(hostname | default(inventory_hostname_short)) }}"
+      # rabbitmq_nodename: "rabbit@{{ ansible_facts['nodename'] }}"
+
+
+  - name: Check if {{ groupname }}" exist and crete it with gid["{{ groupid }}"] if it doesn't
+    vars:
+      groupname: rabbitmq
+      groupid: 514
+    block:
+      - name: TEST - check if "{{ groupname }}" group exists
+        ansible.builtin.getent:
+          database: group
+          key: "{{ groupname }}"
+
+    rescue:
+      - name: Create group["{{ groupname }}"] exists with correct gid["{{ groupid }}"]
+        ansible.builtin.group:
+          name: "{{ groupname }}"
+          state: present
+          gid: "{{ groupid }}"
+
+  - name: Check if user ["{{ username }}"] exist and crete it with uid ["{{ userid }}"] if it doesn't
+    vars:
+      username: rabbitmq
+      userid: 514
+    block:
+      - name: TEST - check if user ["{{ username }}"] group exists
+        ansible.builtin.getent:
+          database: passwd
+          key: "{{ username }}"
+      - name: Modify user ["{{ username }}"]
+        user:
+          name: "{{ username }}"
+          comment: "RabbitMQ messaging server"
+          shell: /bin/nologin
+          createhome: false
+          home: /var/lib/rabbitmq
+
+
+    rescue:
+      - name: Create user ["{{ username }}"]  exists with correct uid ["{{ userid }}"]
+        user:
+          name: "{{ username }}"
+          uid: "{{ userid }}"
+          group: rabbitmq
+          comment: "RabbitMQ messaging server"
+          shell: /bin/nologin
+          createhome: false
+          home: /var/lib/rabbitmq
+
+
+
+  # Installation
+  - name: "Installation of RabbitMQ cots - Name/Version: [mbss-rabbitmq-server]"
+    yum:
+      name: "mbss-rabbitmq-server"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbsscots_repository_name }}"
+    register: _results
+    become: true
+    become_user: root
+
+  - debug:
+      var: _results
+
+
+
+
+
+
+  # Ensure SELinux permissive mode on RabbitMQ domain
+  - name: Configuration of RabbitMQ SELinux domains to permissive mode
+    community.general.selinux_permissive:
+      name: rabbitmq_t
+      permissive: true
+    when: ansible_fact.selinux.mode is defined and  ansible_fact.selinux.mode == "enforcing"
+
+  # Configuration of RabbitMQ
+  - name: "Configuration of RabbitMQ - rabbitmq.config"
+    vars:
+      rabbitmq_config: rabbitmq.config_integration.j2
+    template:
+      src: "{{ item }}"
+      dest: /etc/rabbitmq/rabbitmq.conf
+      owner: root
+      group: rabbitmq
+      mode: 0644
+      backup: yes
+    with_first_found:
+      - "rabbitmqconfig/{{ rabbitmq_config }}"
+      - "default/rabbitmqconfig/{{ rabbitmq_config }}"
+    notify:
+      - "restart rabbitmq-server"
+
+  - name: "Configuration of RabbitMQ - enabled_plugins"
+    vars:
+      rabbitmq_enabled_plugins:
+      - rabbitmq_management
+    template:
+      src: rabbitmqconfig/enabled_plugins.j2
+      dest: /etc/rabbitmq/enabled_plugins
+      owner: root
+      group: rabbitmq
+      mode: 0755
+      backup: yes
+    notify:
+      - "restart rabbitmq-server"
+
+  - name: "Configuration of RabbitMQ - rabbitmq-env.conf"
+    template:
+      src: rabbitmqconfig/rabbitmq-env.conf.j2
+      dest: /etc/rabbitmq/rabbitmq-env.conf
+      owner: root
+      group: rabbitmq
+      mode: 0644
+      backup: yes
+    register: rabbitmq_env
+    notify:
+      - "restart rabbitmq-server"
+
+  - name: "Ensure ACL configuration on /etc/rabbitmq directory"
+    acl:
+      path: /etc/rabbitmq
+      entity: rabbitmq
+      etype: group
+      permissions: r
+      state: present
+
+  # NOTE! this does not work.
+  # - name: Give insecure permissions to an existing file
+  #   ansible.builtin.file:
+  #     path: /etc/rabbitmq
+  #     group: rabbitmq
+  #     mode: 'g=r'
+
+  - ansible.builtin.meta: flush_handlers
+
+  # Checks
+  - name: "Check if rabbitmq-server service is running"
+    service:
+      name: rabbitmq-server
+      state: started
+
+  - name: "Check - RabbitMQ is running"
+    wait_for:
+      port: 5672
+
+  - name: "Check - RabbitMQ is running"
+    wait_for:
+      port: 15672
+
+
+
+  - name: "Check - RabbitMQ vhost / exists"
+    rabbitmq_vhost:
+      name: /
+      node: "{{ rabbitmq_nodename }}"
+      state: present
+
+
+  # Configuration - Users
+
+  - name: "Creation of mbssadmin RabbitMQ user"
+    rabbitmq_user:
+      user: mbssadmin
+      node: "{{ rabbitmq_nodename }}"
+      password: "{{ rabbitmq_mbssadmin_password | default('morpho') }}"
+      vhost: /
+      tags: administrator
+      configure_priv: .*
+      read_priv: .*
+      write_priv: .*
+      state: present
+    no_log: true
+
+  - name: "Creation of mbss RabbitMQ user"
+    rabbitmq_user:
+      user: mbss
+      node: "{{ rabbitmq_nodename }}"
+      password: "{{ rabbitmq_mbss_password | default('morpho') }}"
+      vhost: /
+      configure_priv: .*
+      read_priv: .*
+      write_priv: .*
+      state: present
+    no_log: true
+
+  - name: "Removal of default RabbitMQ users"
+    rabbitmq_user:
+      user: "guest"
+      node: "{{ rabbitmq_nodename }}"
+      state: absent
+
+
+
+
+
+  - name: Check if {{ groupname }}" exist and crete it with gid["{{ groupid }}"] if it doesn't
+    vars:
+      groupname: mbssadmin
+      groupid: 505
+    block:
+      - name: TEST - check if "{{ groupname }}" group exists
+        ansible.builtin.getent:
+          database: group
+          key: "{{ groupname }}"
+
+    rescue:
+      - name: Create group["{{ groupname }}"] exists with correct gid["{{ groupid }}"]
+        ansible.builtin.group:
+          name: "{{ groupname }}"
+          state: present
+          gid: "{{ groupid }}"
+
+  - name: Check if user ["{{ username }}"] exist and crete it with uid ["{{ userid }}"] if it doesn't
+    vars:
+      username: mbssadmin
+      userid: 505
+    block:
+      - name: TEST - check if user ["{{ username }}"] group exists
+        ansible.builtin.getent:
+          database: passwd
+          key: "{{ username }}"
+
+      - name: Create user ["{{ username }}"]
+        user:
+          name: "{{ username }}"
+          group: mbssadmin
+          comment: MBSS admin user
+          shell: /bin/bash
+          home: /home/mbssadmin
+          createhome: true
+          state: present
+
+    rescue:
+      - name: Create user ["{{ username }}"]  exists with correct uid ["{{ userid }}"]
+        user:
+          name: "{{ username }}"
+          uid: "{{ userid }}"
+          group: mbssadmin
+          comment: MBSS admin user
+          shell: /bin/bash
+          home: /home/mbssadmin
+          createhome: true
+          state: present
+
+
+  - name: Check if {{ groupname }}" exist and crete it with gid["{{ groupid }}"] if it doesn't
+    vars:
+      groupname: mbssdataadmin
+      groupid: 506
+    block:
+      - name: TEST - check if "{{ groupname }}" group exists
+        ansible.builtin.getent:
+          database: group
+          key: "{{ groupname }}"
+
+    rescue:
+      - name: Create group["{{ groupname }}"] exists with correct gid["{{ groupid }}"]
+        ansible.builtin.group:
+          name: "{{ groupname }}"
+          state: present
+          gid: "{{ groupid }}"
+
+  - name: Check if user ["{{ username }}"] exist and crete it with uid ["{{ userid }}"] if it doesn't
+    vars:
+      username: mbssdataadmin
+      userid: 506
+    block:
+      - name: TEST - check if user ["{{ username }}"] group exists
+        ansible.builtin.getent:
+          database: passwd
+          key: "{{ username }}"
+
+      - name: Modify user ["{{ username }}"]
+        user:
+          name: "{{ username }}"
+          group: mbssdataadmin
+          groups:
+            - mbssadmin
+          comment: MBSS data admin user
+          shell: /bin/bash
+          home: /home/mbssdataadmin
+          createhome: true
+          state: present
+
+    rescue:
+      - name: Create user ["{{ username }}"]  exists with correct uid ["{{ userid }}"]
+        user:
+          name: "{{ username }}"
+          uid: "{{ userid }}"
+          group: mbssdataadmin
+          groups:
+            - mbssadmin
+          comment: MBSS data admin user
+          shell: /bin/bash
+          home: /home/mbssdataadmin
+          createhome: true
+          state: present
+
+
+  - name: Check if {{ groupname }}" exist and crete it with gid["{{ groupid }}"] if it doesn't
+    vars:
+      groupname: mbss
+      groupid: 507
+    block:
+      - name: TEST - check if "{{ groupname }}" group exists
+        ansible.builtin.getent:
+          database: group
+          key: "{{ groupname }}"
+
+    rescue:
+      - name: Create group["{{ groupname }}"] exists with correct gid["{{ groupid }}"]
+        ansible.builtin.group:
+          name: "{{ groupname }}"
+          state: present
+          gid: "{{ groupid }}"
+
+  - name: Check if user ["{{ username }}"] exist and crete it with uid ["{{ userid }}"] if it doesn't
+    vars:
+      username: mbss
+      userid: 507
+    block:
+      - name: TEST - check if user ["{{ username }}"] group exists
+        ansible.builtin.getent:
+          database: passwd
+          key: "{{ username }}"
+
+      - name: Modify user ["{{ username }}"]
+        user:
+          name: "{{ username }}"
+          group: mbssadmin
+          groups:
+            - mbss
+            - mbssdataadmin
+          comment: MBSS user
+          shell: /bin/bash
+          home: /opt/mbss
+          createhome: false
+          password_lock: yes
+          state: present
+
+
+    rescue:
+      - name: Create user ["{{ username }}"]  exists with correct uid ["{{ userid }}"]
+        user:
+          name: "{{ username }}"
+          uid: "{{ userid }}"
+          group: mbssadmin
+          groups:
+            - mbss
+            - mbssdataadmin
+          comment: MBSS user
+          shell: /bin/bash
+          home: /opt/mbss
+          createhome: false
+          password_lock: yes
+          state: present
+
+
+
+
+  # Log directory symlink has to be created before any mbss installation
+  - name: "Create MBSS root directory /opt/mbss"
+    ansible.builtin.file:
+      path: /opt/mbss/
+      state: directory
+      owner: mbss
+      group: mbss
+      mode: 0755
+
+  - name: "Create MBSS log directory /var/log/mbss"
+    ansible.builtin.file:
+      path: /var/log/mbss
+      state: directory
+      owner: mbss
+      group: mbssadmin
+      mode: 02775
+
+  - name: "Linking /opt/mbss/logs to /var/log/mbss"
+    ansible.builtin.file:
+      src: /var/log/mbss
+      dest: /opt/mbss/logs
+      owner: mbss
+      group: mbssadmin
+      state: link
+      force: yes
+    ignore_errors: yes
+
+  #Installation
+  #Only the package name as the CBR repo contains a single version.
+  - name: "Remove morphobss-noEC_highIP_PRINT"
+    yum:
+      name:
+        - morphobss-noEC_highIP_PRINT
+      state: absent
+      disablerepo: "*"
+      enablerepo: "{{ mbss_repository_name }}"
+    become: true
+    become_user: root
+
+  #Installation
+  #Only the package name as the CBR repo contains a single version.
+  - name: "Installation of MBSS cots - Name: [mbss-misc-cots, bioparam{{ mbss_bioparam_classifier | default('') | regex_replace('^(.+)$', '-\\1')  }}, morphobss{{ mbss_morphobss_classifier | default('') | regex_replace('^(.+)$', '-\\1')  }}]"
+    yum:
+      name:
+        - mbss-httpd-server
+        - mbss-misc-cots
+        - mbss-all-cots
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbsscots_repository_name }}"
+    become: true
+    become_user: root
+
+  - name: "Installation of MBSS bioparam"
+    yum:
+      name:
+        - bioparam-police-optimum-noface
+        - morphobss-EC_highIP_PRINT
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbss_repository_name }}"
+    become: true
+    become_user: root
+
+  # MBSS package installation removes mbss user from mbss group
+  # Fix it by positioning mbss user inside mbss secondary groups
+  - name: "Fix mbss user groups"
+    user:
+      name: mbss
+      group: mbssadmin
+      groups:
+        - mbss
+        - mbssdataadmin
+      state: present
+
+  # Install lxml on target machine to support ansible xml tasks
+  - name: "Install python3-lxml "
+    yum:
+      name: "{{ item }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ RedHat8_AppStream_repo_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    with_list:
+      - python3-lxml
+
+
+
+  - name: Check if adminClient.sh file exists
+    stat:
+      path: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh"
+    register: adminClientfile
+
+  # - name: Download Teragrid config
+  #   ansible.builtin.get_url:
+  #     url: "{{ custo_mbssConfig_path }}teragrid-configuration.xml"
+  #     dest: /opt/mbss/conf/teragrid-configuration.xml
+  #     backup: yes
+  #     owner: mbss
+  #     group: mbssadmin
+  #     mode: 0775
+
+  # - name: Download
+  #   ansible.builtin.get_url:
+  #     url: "{{ custo_mbssConfig_path }}dbKeystore.jceks"
+  #     dest: /opt/mbss/conf/dbKeystore.jceks
+  #     backup: yes
+  #     owner: mbss
+  #     group: mbssadmin
+  #     mode: 0664
+
+
+  - name: Teragrid-configuration.xml stuff
+    block:
+    - name: "Modifications in teragrid-configuration.xml"
+      vars:
+
+      ##### MBSS Teragrid configuration specific properties
+        mbss_teragrid_configuration:
+          - { xpath: "/teragrid/partitionCount/persons", value: "{{ mbss_teragrid_partition_count.persons }}" }
+          - { xpath: "/teragrid/partitionCount/latents", value: "{{ mbss_teragrid_partition_count.latents }}" }
+          - { xpath: "/teragrid/psetCount/persons", value: 1 }
+      block:
+        - name: "Check that XPATH [{{ item.xpath }}] exists"
+          xml:
+            path: "/opt/mbss/conf/teragrid-configuration.xml"
+            xpath: "{{ item.xpath }}"
+            count: yes
+            backup: yes
+          register: hits
+          #failed_when: hits.count != 1
+          with_items:
+            - "{{ mbss_teragrid_configuration }}"
+          ignore_errors: yes
+          become: true
+          become_user: root
+
+        - name: "Set value for XPATH [{{ item.xpath }}]"
+          xml:
+            path: "/opt/mbss/conf/teragrid-configuration.xml"
+            xpath: "{{ item.xpath }}"
+            value: "{{ item.value }}"
+            backup: yes
+          notify: "Set teraconfiguration"
+          with_items: "{{ mbss_teragrid_configuration }}"
+      when: mbss_teragrid_configuration is defined
+
+    # Pull the localhost name of the rabbitMQ server !
+
+    - name: "Teragrid configuration - RabbitMQ broker host"
+      xml:
+        path: /opt/mbss/conf/teragrid-configuration.xml
+        xpath: /teragrid/broker/internal/host
+        value: "{{ inventory_hostname_short }}"
+        backup: yes
+      notify: "Set teraconfiguration"
+
+    - name: "Teragrid configuration - Zookeeper connection string"
+      vars:
+        mbss_zookeeper_connect_string: "{%- for server in (groups['zookeepers']|sort) -%}
+                                        {{ inventory_hostname_short }}:2181
+                                        {%- if not loop.last %},{%- endif -%}
+                                    {%- endfor -%}"
+      xml:
+        path: /opt/mbss/conf/teragrid-configuration.xml
+        xpath: /teragrid/zookeeper/connectString
+        value: "{{ mbss_zookeeper_connect_string }}"
+        backup: yes
+      notify: "Set teraconfiguration"
+
+    - name: Echo Set teraconfiguration
+      ansible.builtin.command: echo Set teraconfiguration
+      notify: "Set teraconfiguration"
+
+    - name: Generate dbkey if required
+      pause:
+        prompt: |
+          Pause to generate certiticate
+          mbss@<hostname>$ keytool -genseckey -alias dbKey -keyalg aes -keysize 128 -storetype jceks \
+            -keystore /opt/mbss/conf/dbKeystore.jceks
+
+          Warning: Encrypted data cannot be recovered without this keystore, so make sure to securely back it up!
+
+          Encrypt password using
+          $ encryptPassword.sh
+
+          Update: the encryption section of teragrid-configuration.xml with keystore and ENC() password details.
+
+          e.g.
+          <teradb>
+            <encryption>
+              <keyStorePath>/opt/mbss/conf/dbKeystore.jceks</keyStorePath>
+              <keyStorePassword>ENC(000000201008bd16fd166e9c87d8d234e34d7bbc1e2409e689e333c3bd2026)</
+              <keyStorePassword>
+              <keyAlias>dbKey</keyAlias>
+              <keyPassword>ENC(000000201008bd16fd166e9c87d8d234e34d7bbc1e2409e689e333c3bd2026)</keyPassword>
+            </encryption>
+          </teradb>
+
+          Press enter to continue
+
+    - name: Generate dbkey if required
+      pause:
+        prompt: |
+          Pause
+
+          Also Disable TLS if needed.
+
+          <tls>
+            .....
+            <amqp>
+              <enable>false</enable>
+              .....
+          </amqp>
+            <zookeeper>
+              <enable>false</enable>
+              ....
+            </zookeeper>
+            <ws>
+              <enable>false</enable>
+              ....
+            </ws>
+          </tls>
+
+          Press enter to continue
+
+
+  - name: "Teragrid configuration - disable TLS"
+    xml:
+      path: /opt/mbss/conf/teragrid-configuration.xml
+      xpath: /teragrid/tls/amqp/enable
+      value: "false"
+      backup: yes
+
+  - name: "Teragrid configuration - disable TLS"
+    xml:
+      path: /opt/mbss/conf/teragrid-configuration.xml
+      xpath: /teragrid/tls/ws/enable
+      value: "false"
+      backup: yes
+
+
+  - name: "Stop MBSS Grid if adminClient.sh file exists"
+    become_user: mbssadmin
+    when: adminClientfile
+    ignore_errors: yes
+    block:
+      - name: "Get MBSS Grid status"
+        ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C status"
+        changed_when: false
+        failed_when: false
+        register: grid_status_before_shutdown
+      - name: "Shutdown of MBSS Grid"
+        ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C stopGrid"
+      - name: "Check MBSS Grid status"
+        ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C status"
+        changed_when: false
+        failed_when: false
+        register: grid_status_after_shutdown
+      - name: "MBSS Grid status"
+        debug:
+          var: grid_status_after_shutdown.stdout_lines
+
+
+  - name: "Configure adminDaemon hostname"
+    replace:
+      dest: "{{ item }}"
+      regexp: 'adminDaemon.sh((?! -H))'
+      replace: 'adminDaemon.sh -H {{ inventory_hostname_short }}'
+      backup: yes
+    with_items:
+      - "/opt/mbss/conf/adminDaemon.conf"
+      - "/opt/mbss/conf/adminDaemon.service"
+      - "/usr/lib/systemd/system/adminDaemon.service"
+    when: "mbss_force_admindaemon_hostname | default(true)"
+    notify:
+     - "Systemctl AdminClient Restart"
+
+  - name: "Force Adminclient Service configuration updates - flush handlers "
+    ansible.builtin.meta: flush_handlers
+
+
+
+  ## Creation of MBSS data directories
+  # First, ensures root_directory has right owner/rights
+  - name: Create DATA/DATABKP directories then copy grid config
+    vars:
+      mbss_data_root_directory: "/data"
+      subdirectories:
+        - { subdirectory: "mbss/persons", when: "{{ mbss_teragrid_partition_count.persons|default(12) > 0 }}" }
+        - { subdirectory: "mbss/latents", when: "{{ mbss_teragrid_partition_count.latents|default(12) > 0 }}" }
+        - { subdirectory: "mbss/stats" }
+    block:
+    - name: Recursively change ownership of a directory
+      ansible.builtin.file:
+        path: /data
+        state: directory
+        recurse: yes
+        owner: mbss
+        group: mbssdataadmin
+
+    - name: "Create mbss DATA/DATABKP directories"
+      ansible.builtin.file:
+        path: "{{ mbss_data_root_directory }}/{{ item.subdirectory }}"
+        state: directory
+        owner: mbss
+        group: mbssdataadmin
+        mode: '2770'
+      with_items: "{{ subdirectories }}"
+      when:
+        - "item.when|default(true)"
+
+    ## Installation of MBSS Grid
+    - name: "Copy of the grid configuration   "
+      vars:
+        mbss_gridconfig_filename: "gridconfig-INTEGRATION.txt.j2"
+      template:
+        src: "{{ item }}"
+        dest: /opt/mbss/conf/gridconfig.txt
+        owner: mbss
+        group: mbssadmin
+        mode: 0644
+        backup: true
+        force: no
+      with_first_found:
+        - "{{ inventory_dir }}/group_vars/mbss/files/gridconfig.txt"
+        - "{{ mbss_version | default('default') }}/gridconfigs/{{ mbss_gridconfig_filename }}"
+        - "default/gridconfigs/{{ mbss_gridconfig_filename }}"
+        - "gridconfigs/{{ mbss_gridconfig_filename }}"
+
+  - name: "Unload MBSS Grid - to prevent conflicts - required for upgrade"
+    ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C undeclareAll -p"
+    become_user: mbssadmin
+    run_once: true
+    when: "'mbss_dc' in groups"
+    register: unload_grid
+    changed_when: unload_grid.stdout_lines | select("match", "Nb services removed .*") | first | regex_replace("Nb services removed ", "") | int > 0
+    ignore_errors: yes
+
+  - name: "MBSS Grid unload output"
+    run_once: true
+    debug:
+      var: unload_grid.stdout_lines
+
+  - name: "Load MBSS Grid"
+    ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C load -f /opt/mbss/conf/gridconfig.txt -d ';'"
+    become_user: mbssadmin
+    run_once: true
+    when: "'mbss_dc' in groups"
+    register: load_grid
+    changed_when: load_grid.stdout_lines | select("match", ".* services added") | first | regex_replace(" services added", "") | int > 0
+    notify: "Startup of adminDaemon service"
+    ignore_errors: yes
+
+  - name: "MBSS Grid load output"
+    run_once: true
+    debug:
+      var: load_grid.stdout_lines
+
+  - name: Flush handlers to start adminDaemon
+    ansible.builtin.meta: flush_handlers
+
+  - name: "Start MBSS Grid"
+    become_user: mbssadmin
+    run_once: true
+    when: "'mbss_dc' in groups"
+    ignore_errors: yes
+    block:
+      - name: "Get MBSS Grid status"
+        ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C status"
+        changed_when: false
+        failed_when: false
+        register: grid_status_before_startup
+      - name: "Startup of MBSS Grid"
+        ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C startGrid"
+        when: 'grid_status_before_startup.stdout_lines|select("match",".*service .* (stopped|not started).*")|list|length > 0'
+      - name: "Check MBSS Grid status"
+        ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/adminClient.sh -C status"
+        changed_when: false
+        failed_when: false
+        register: grid_status_after_startup
+      - name: "MBSS Grid status"
+        debug:
+          var: grid_status_after_startup.stdout_lines
+
+  handlers:
+
+  - name: "restart zookeeper-server"
+    service:
+      name: zookeeper-server
+      state: restarted
+    listen: "restart zookeeper-server"
+
+  - name: "Check - Zookeeper-server service status = started"
+    service:
+      name: zookeeper-server
+      enabled: yes
+      state: started
+    listen: "restart zookeeper-server"
+
+  - name: "restart rabbitmq-server"
+    service:
+      name: rabbitmq-server
+      state: restarted
+
+  - name: "Startup of adminDaemon service"
+    service:
+      name: adminDaemon
+      state: started
+
+  - name: "Systemctl AdminClient Restart"
+    service:
+      name: adminDaemon
+      state: restarted
+
+
+  # Set teraconfiguration - Only done on one DC machine
+  - name: "Set teraconfiguration"
+    ansible.builtin.command: "{{ mbss_scripts_root_directory | default('/opt/mbss/tools') }}/teraconf.sh --set"
+    become: true
+    become_user: mbssadmin
+    run_once: true
+    delegate_to: "{{ groups.mbss_dc | first }}"
+    #when: inventory_hostname == (groups['mbss_dc']|sort)[0]

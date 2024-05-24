@@ -1,0 +1,9 @@
+---
+# vars file for repo
+
+# OS Repos
+RedHat8_BaseOS_repo_name: SERVER09-BaseOS
+RedHat8_BaseOS_repo_URL: http://pbimm-vpd-png09:8889/repo/rhel-8-for-x86_64-baseos-rpms
+
+RedHat8_AppStream_repo_name: SERVER09-AppStream
+RedHat8_AppStream_repo_URL: http://pbimm-vpd-png09:8889/repo/rhel-8-for-x86_64-appstream-rpms

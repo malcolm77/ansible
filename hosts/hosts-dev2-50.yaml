@@ -1,0 +1,53 @@
+all:
+  children:
+    env_testbench: # variables defined at this groups can be found in group vars
+      children:
+        build_integration:
+          vars:
+            ip_bisapp: xxx.xxx.xxx.xxx
+            ip_keycloak: xxx.xxx.xxx.xxx
+          children:
+            mbis_jboss: # These groups name are now used in scripts!
+              hosts:
+                bis50:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbis_des:
+              hosts:
+                bis50:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbis_fes:
+              hosts:
+                bis50:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbis_SSO:
+              hosts:
+                bis50:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbis_tera :
+              hosts:
+                bis50:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbis_db:
+              hosts:
+                bisdb:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbss_dc:
+              hosts:
+                mbss_dc_host:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbss:
+              hosts:
+                bismatcher:
+                  ansible_host: xxx.xxx.xxx.xxx
+            zookeepers:
+              hosts:
+                bismatcher:
+                  ansible_host: xxx.xxx.xxx.xxx
+            rabbitmq:
+              hosts:
+                bismatcher:
+                  ansible_host: xxx.xxx.xxx.xxx
+
+
+
+

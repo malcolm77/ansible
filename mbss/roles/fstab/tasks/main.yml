@@ -1,0 +1,8 @@
+---
+# tasks file for fstab
+- name: Add new mount points to /etc/fstab
+  ansible.builtin.blockinfile:
+    path: /etc/fstab
+    block: |
+      /dev/mapper/rootvg-optmbsslv /opt/mbss ext4 defaults 1 2
+      /dev/mapper/rootvg-optmbsslogslv /opt/mbss/logs ext4 defaults 1 2

@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Install lm_sensors 
+    yum:
+      name: lm_sensors*
+      state: present
+  - name: Install net-snmp
+    yum:
+      name: lm_sensors*
+      state: present
+  - name: Stop the snmpd service
+    service:
+      name: snmpd
+      state: stopped
+  - name: add the snmpv4use
+    command: net-snmp-create-v3-user -ro -A Opu3RSslORkkua -X gbNLE6i9GgLckA -a SHA -x AES snmpv3morpho 
+  - name: Start the snmpd service
+    service:
+      name: snmpd
+      state: started
+  - name: add snmp to iptables 
+    iptables:
+      chain: INPUT
+      protocol: udp
+      policy: ACCEPT
+      protocol: udp

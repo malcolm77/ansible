@@ -1,0 +1,46 @@
+---
+# tasks file for mbis-createjarxmltriggers
+
+
+- name: "Change owner of jar and xml to bis"
+  ansible.builtin.shell: 'chown -R bis.bis /opt/bis/dsm/tenprints/'
+  become: true
+  become_user: root
+
+
+
+
+- name: Run a script with arguments tenprints
+  ansible.builtin.script:
+    cmd: ./scripts/createtriggerfiles.sh -path:/opt/bis/dsm/tenprints
+  args:
+    executable: /bin/bash
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+
+
+- name: "Change owner of jar and xml to bis"
+  ansible.builtin.shell: 'chown -R bis.bis /opt/bis/dsm/latent/'
+  become: true
+  become_user: root
+
+
+
+- name: Run a script with arguments latent
+  ansible.builtin.script:
+    cmd: ./scripts/createtriggerfiles.sh -path:/opt/bis/dsm/latent
+  args:
+    executable: /bin/bash
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+

@@ -1,0 +1,8 @@
+---
+# defaults file for mbis-common
+
+mbis_package_names:
+- bis-os-config
+- bis-common-lib
+- bis-env
+- bis-coresdk-GENERIC_WITH_MTK

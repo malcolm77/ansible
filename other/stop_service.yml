@@ -1,0 +1,12 @@
+---
+# This playbook will restart a services
+
+- name: Stop a service
+  hosts: all
+  become: true
+  tasks:
+  - name: Stopping the named service
+    service:
+      name: "{{ service_name }}" 
+      state: stopped
+

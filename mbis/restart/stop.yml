@@ -1,0 +1,24 @@
+---
+- name: Start and Stop Services on all MBIS servers
+  gather_facts: yes
+  become: yes
+  hosts: MBIS
+
+  roles:
+    - role: allshutdown
+      tags: ALL
+    - role: desshutdown
+      tags: DES 
+      when: inventory_hostname in groups['DES']
+    - role: fesshutdown
+      tags: FES
+      when: inventory_hostname in groups['FES']
+    - role: terashutdown
+      tags: TERA
+      when: inventory_hostname in groups['TERA']
+    - role: fesmigshutdown
+      tags: FESMIG
+      when: inventory_hostname in groups['FESMIG']
+    - role: teramigshutdown
+      tags: TERAMIG
+      when: inventory_hostname in groups['TERAMIG']

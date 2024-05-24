@@ -1,0 +1,18 @@
+---
+
+- name: "Ensure download folder {{ package_target_directory }} exists"
+  win_file:
+    state: directory
+    path: "{{ package_target_directory }}"
+
+- name: "Download package [{{ package_name }}]"
+  win_get_url:
+    url: "{{ package_source_baseurl }}/{{ package_name }}"
+    dest: "{{ package_target_directory }}/{{ package_name }}"
+  async: 3600
+  poll: 10
+
+- name: "Check [{{ package_name }}] package is present"
+  win_file:
+    path: "{{ package_target_directory }}/{{ package_name }}"
+    state: file

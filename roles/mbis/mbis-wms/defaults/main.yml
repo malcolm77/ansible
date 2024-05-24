@@ -1,0 +1,8 @@
+---
+# defaults file for mbis-wms
+
+mbis_package_names:
+ - bis-wms
+
+mbis_shutdown_package_service_names:
+ - { package_name: "bis-wms", service_name: "Wms.service", shutdown_script: "WmsShutdown"}

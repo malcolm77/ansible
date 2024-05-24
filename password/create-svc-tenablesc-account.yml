@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+  - name: create svc_tenable user
+    ansible.builtin.user:
+      name: svc_tenablesc
+      password: $6$okzJYFsUm.ai0069$b4tBaxeQuJp1SETOnfYev6kL9OPnBoBw2ntykskDbRXnHgp11ulVCYoXLluL6UOrljbKo0uOaFlxq2OUpVbpc/
+
+  - name: Add group to AllowGroups
+    ansible.builtin.replace:
+      backup: yes
+      dest: /etc/ssh/sshd_config
+      regexp: '^(AllowGroups(?!.*\b svc_tenablesc \b).*)$'
+      replace: '\1 svc_tenablesc'
+
+  - name: Add line to sudoers file
+    ansible.builtin.lineinfile:
+      path: /etc/sudoers
+      line: svc_tenablesc ALL=(root) ALL
+
+  - name: Restart SSH
+    ansible.builtin.service:
+      name: sshd
+      state: restarted

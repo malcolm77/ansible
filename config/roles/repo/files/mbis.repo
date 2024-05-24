@@ -1,0 +1,13 @@
+[idemia_mbis]
+async = 1
+baseurl = http://xxx.xxx.xxx.xxx/repo/MBIS_5.12.1/MBIS_5.12.1/backend/
+enabled = 1
+gpgcheck = 0
+name = IDEMIA mbis repository
+
+[idemia_mbis_common]
+async = 1
+baseurl = http://xxx.xxx.xxx.xxx/repo/mbis_common/
+enabled = 1
+gpgcheck = 0
+name = IDEMIA mbis repository

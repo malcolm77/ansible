@@ -1,0 +1,51 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: Create prom file inc. permissions
+    ansible.builtin.file:
+      path: /tmp/node/idemia_os_password_expiration.prom
+      owner: ansible
+      group: ansible
+      mode: '0644'
+      state: touch
+
+  - name: Add ansible to cron.allow
+    ansible.builtin.lineinfile:
+      path: /etc/cron.allow
+      line: 'ansible'
+      create: yes
+
+  - name: Make /home/ansible/scripts folder
+    ansible.builtin.file:
+      path: /home/ansible/scripts
+      state: directory
+      owner: ansible
+      group: ansible
+      mode: '0755'
+
+  - name: Create / copy script
+    ansible.builtin.copy:
+      src: idemia_os_password_expiration.sh 
+      dest: /home/ansible/scripts/idemia_os_password_expiration.sh
+      owner: ansible
+      group: ansible
+      mode: '0755'
+
+  - name: add crontab job 
+    ansible.builtin.cron:
+      user: ansible
+      name: "Check passsword expiration"
+      minute: "1"
+      hour: "1"
+      job: "/home/ansible/scripts/idemia_os_password_expiration.sh > /tmp/node/idemia_os_password_expiration.prom"
+
+  - name: Remove Telegraf file
+    ansible.builtin.file:
+      path: /etc/telegraf/telegraf.d/password_expiration.conf
+      state: absent

@@ -1,0 +1,25 @@
+---
+# tasks file for mbis-shutdown
+
+
+
+
+# get MBIS status, save results to a variable, then stop services if running.
+- name: "Check MBIS Running status: AllStatus.sh"
+  ansible.builtin.shell: "sh /opt/bis/scripts/AllStatus"
+  register: result
+
+- name: "Set MBISAllStatusRunning to true when AllStatus.sh reports regex:'Running.*with.*PID'"
+  set_fact:
+    MBISAllStatusRunning: true
+  when: result.stdout | regex_search('Running.*with.*PID') != none
+
+- name: "Set MBISAllStatusRunning to false when AllStatus.sh does not contain Regex:'Running.*with.*PID'"
+  set_fact:
+    MBISAllStatusRunning: false
+  when: result.stdout | regex_search('Running.*with.*PID') == none
+
+- name: "Shutdown MBIS by running ALLShutdown.sh"
+  ansible.builtin.shell: "sh /opt/bis/scripts/AllShutdown"
+  register: result
+  when: MBISAllStatusRunning

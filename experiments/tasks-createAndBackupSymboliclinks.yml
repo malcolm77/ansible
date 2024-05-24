@@ -1,0 +1,44 @@
+---
+
+  - name: Create server mbisdev keystore link and backup if exists
+    block:
+      - name: TEST - create a symbolic link
+        ansible.builtin.file:
+          src: "{{ item.link_target }}"
+          dest: "{{ item.link_name }}"
+          state: link
+        check_mode: true
+        register: _results
+        failed_when:
+          - _results.changed == true
+          - _results.diff.before.src is defined
+          - _results.diff.after.src is defined
+          - _results.diff.after.src != _results.diff.before.src
+
+      - name: Create a symbolic link
+        ansible.builtin.file:
+          src: "{{ item.link_target }}"
+          dest: "{{ item.link_name }}"
+          state: link
+          force: yes
+        register: _results
+
+      - ansible.builtin.debug:
+          var: _results
+
+
+
+    rescue:
+      - name: Create backup
+        ansible.builtin.shell: cp -d "{{ item.link_name }}" "{{ item.link_name }}.old" --backup=numbered
+
+      - name: Create a symbolic link
+        ansible.builtin.file:
+          src: "{{ item.link_target }}"
+          dest: "{{ item.link_name }}"
+          state: link
+          force: yes
+        register: _results
+
+      - ansible.builtin.debug:
+          var: _results

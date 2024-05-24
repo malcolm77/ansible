@@ -1,0 +1,18 @@
+---
+- name: find out if a package is installed
+  hosts: all
+  become: no
+  
+  tasks:
+    - name: gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+#    - name: print the package facts
+#      ansible.builtin.debug:
+#        var: ansible_facts.packages
+
+    - name: chaeck if package is installed
+      ansible.builtin.debug:
+        msg: "{{ ansible_facts.packages['java'] | length }} versions of apache are installed"
+      when: "'java' in ansible_facts.packages"

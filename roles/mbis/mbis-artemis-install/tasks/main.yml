@@ -1,0 +1,21 @@
+---
+# tasks file for mbis-artemis-install
+
+
+- name: Install artemis packages
+  block:
+  - name: "Installation of MBIS artemis STD packages - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+- debug :
+    var: _result

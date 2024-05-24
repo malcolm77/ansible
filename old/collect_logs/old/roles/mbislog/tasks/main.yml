@@ -1,0 +1,11 @@
+- name: Find the MBIS Logs
+  find:
+    path: /opt/bis/log
+    patterns: "*.log"
+  register: logs
+
+- name: Copy all the MBIS logs to /all_logs/
+  ansible.builtin.fetch:
+    src: "{{ item.path }}"
+    dest: /all_logs/
+  with_items: "{{ logs.files }}"

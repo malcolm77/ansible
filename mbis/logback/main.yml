@@ -1,0 +1,15 @@
+---
+- name: Update the fes-logback xml file
+  hosts: all
+  become: yes  
+
+  tasks:
+  - name: Copy hosts file
+    ansible.builtin.copy:
+      backup: yes
+      src: fes-logback.xml
+      dest: /opt/bis/fes/etc/fes-logback.xml
+      force: yes
+      owner: bis
+      group: bis
+      mode: '0644'

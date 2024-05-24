@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes 
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: Get Hardening Report from the ansible home directory
+    ansible.builtin.fetch:
+      src: /usr/mph/mph-security-3.0.0_-1.el8/resources/scripts/result-hardening-20220725_0710.res
+      dest: /home/username/PDC_Prod_RHEL_Ansible/hardening/logs

@@ -1,0 +1,15 @@
+---
+# defaults file for mbis-mbis-repository
+
+# YUM repositories
+ansible_mbis_baseURL: http://xxx.xxx.xxx.xxx/mbis5.11.0
+ansible_mbis_common_baseURL: http://xxx.xxx.xxx.xxx/mbis_common
+ansible_mbss_repoURL: http://xxx.xxx.xxx.xxx/MBSS_7.1.0
+
+ansible_mbsscots_repoURL: http://xxx.xxx.xxx.xxx/MBSS_7.1.0/mbss-cots-7.1.0-linux64-el8/mbss-cots-7.1.0/
+mbsscots_repository_name: ansible_mbsscots
+
+# Mbis repository details
+mbis_repository_name: ansible_mbis
+mbis_common_repository_name: ansible_mbis_common
+mbss_repository_name: ansible_mbss

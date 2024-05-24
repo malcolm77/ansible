@@ -1,0 +1,15 @@
+---
+- hosts: all
+  tasks:
+  - name: Copy installer
+    copy:
+      src: /var/lib/awx/projects/prod-playbooks/AD/join-ad.sh
+      dest: /tmp
+  - name: Copy kerberos file
+    copy:
+      src: /var/lib/awx/projects/prod-playbooks/AD/krb5.conf.pdc
+      dest: /tmp/krb5.conf
+  - name: Copy sssd.conf file
+    copy:
+      src: /var/lib/awx/projects/prod-playbooks/AD/sssd.conf.pdc
+      dest: /tmp/sssd.conf

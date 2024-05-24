@@ -1,0 +1,26 @@
+<<<<<<< HEAD
+# Install Openldap-clients package
+=======
+# Instal the Openldap-clients package
+>>>>>>> f876942a4c3088c421440668bd22a4f1d9aebe96
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: ansible
+
+  tasks:
+  - name: disable broken ansible_mbis repos
+    ansible.builtin.replace:
+      path: /etc/yum.repos.d/ansible_repos.repo
+      regexp: 'enabled = 1'
+      replace: 'enabled = 0'
+
+  - name: Install package(s)
+    ansible.builtin.yum:
+      name: "{{ packages }}"
+      state: latest
+    vars:
+      packages:
+      - openldap-clients
+

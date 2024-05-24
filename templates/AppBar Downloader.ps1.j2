@@ -1,0 +1,26 @@
+####
+## AppBar Downloader
+##   This scripts aimes at downloading MbisApps.jar AppBar file and install a shortcut on the Desktop
+####
+
+echo "Create a MorphoTrak directory in $Home if it does not already exists"
+new-item -Name MorphoTrak -PATH $Home -ItemType directory -Force
+
+echo "Importing MBIS client certificate - {{ mbis_frontend_client_certificate.name }}"
+$mypwd = Get-Credential -UserName 'Enter password below' -Message 'Enter MBIS client certificate password below - Certificate Name: {{ mbis_frontend_client_certificate.name }}'
+Import-PfxCertificate -FilePath "{{ mbis_frontend_security_directory }}\\{{ mbis_frontend_client_certificate.name }}" -CertStoreLocation Cert:\CurrentUser\My -Password $mypwd.Password
+$Thumbprint = (Get-PfxData -Password $mypwd.Password -FilePath "{{ mbis_frontend_security_directory }}\\{{ mbis_frontend_client_certificate.name }}").EndEntityCertificates.Thumbprint
+
+echo "Download MBISApps.jar AppBar file from {{ mbis_frontend_backend_baseurl }}/AppBar/MBISApps.jar into $Home/MorphoTrak"
+Invoke-WebRequest -Uri {{ mbis_frontend_backend_baseurl }}/AppBar/MBISApps.jar -UseBasicParsing -OutFile $Home/MorphoTrak/MBISApps.jar -CertificateThumbprint $Thumbprint
+
+if (Test-Path $Home/MorphoTrak/MBISApps.jar) {
+	echo "Create 'MBIS AppBar' shortcut on user desktop"
+	$WshShell = New-Object -comObject WScript.Shell
+	$Shortcut = $WshShell.CreateShortcut("$Home\Desktop\MBIS AppBar.lnk")
+	$Shortcut.TargetPath = "javaw.exe"
+	$Shortcut.Arguments = "-cp ""$Home/MorphoTrak/MBISApps.jar"" com.idemia.mbisapps.AppBar"
+	$Shortcut.Save()
+}
+
+pause

@@ -1,0 +1,5 @@
+
+/opt/bis/fes/etc/fes-logback.xml
+change all instances of INFO to DEBUG
+
+same for /opt/bis/des, /opt/bis/tera, etc, etc

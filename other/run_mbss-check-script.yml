@@ -1,0 +1,6 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: run person and latent count script
+    shell: /root/scripts/mbss-check.sh

@@ -1,0 +1,1 @@
+powershell.exe -ExecutionPolicy Unrestricted -file C:\tools\Scripts\Wallpaper_Integration.ps1

@@ -1,0 +1,22 @@
+---
+
+- name: Copy certificates directory to /bis/certificates/
+  ansible.builtin.copy:
+    src: "./files/certificates"
+    dest: "/opt"
+    owner: bis
+    group: bis
+    directory_mode:
+  become: true
+  become_user: root
+
+- name: "Deploy SSL Certificates - wms"
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  ansible.builtin.shell: /opt/bis/keycloak-config/scripts/configure-deployments.sh
+  ansible.builtin.command: sh /opt/certificates/scripts/link-certificates.sh wms
+  register: _results
+
+- ansible.builtin.debug:
+    var: _results

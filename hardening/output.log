@@ -1,0 +1,144 @@
+
+PLAY [all] *********************************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [SERVER05]
+ok: [SERVER02]
+ok: [SERVER04]
+ok: [SERVER03]
+ok: [SERVER01]
+ok: [SERVER02]
+ok: [SERVER01]
+ok: [SERVER25]
+ok: [SERVER24]
+ok: [SERVER01]
+ok: [SERVER27]
+ok: [SERVER26]
+ok: [SERVER28]
+ok: [SERVER29]
+ok: [SERVER30]
+ok: [SERVER32]
+ok: [SERVER31]
+ok: [SERVER33]
+ok: [SERVER34]
+ok: [SERVER35]
+ok: [SERVER36]
+ok: [SERVER37]
+ok: [SERVER38]
+ok: [SERVER39]
+ok: [SERVER40]
+ok: [SERVER42]
+ok: [SERVER41]
+ok: [SERVER01]
+ok: [SERVER02]
+ok: [SERVER03]
+ok: [SERVER04]
+ok: [SERVER05]
+ok: [SERVER06]
+ok: [SERVER07]
+ok: [SERVER08]
+ok: [SERVER09]
+ok: [SERVER02]
+ok: [SERVER01]
+ok: [SERVER10]
+ok: [SERVER11]
+ok: [SERVER12]
+ok: [SERVER21]
+ok: [SERVER22]
+ok: [SERVER23]
+ok: [SERVER20]
+
+TASK [Get Hardening Report from the ansible home directory] ********************
+fatal: [SERVER01]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER02]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER05]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER04]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER03]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER01]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER02]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER24]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER25]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER01]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER26]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER27]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER28]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER29]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER30]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER31]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER32]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER33]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER34]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER35]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER36]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER37]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER38]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER39]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER40]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER42]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER41]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER01]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER02]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER03]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER01]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER02]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER04]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER05]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER06]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER07]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER08]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER09]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER10]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER11]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER12]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER20]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER21]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER22]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+fatal: [SERVER23]: FAILED! => {"changed": false, "msg": "the remote file does not exist, not transferring, ignored"}
+
+PLAY RECAP *********************************************************************
+SERVER24            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER25            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER26            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER27            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER28            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER29            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER30            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER31            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER32            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER33            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER34            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER35            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER36            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER37            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER38            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER39            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER40            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER41            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER42            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER01            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER02            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER03            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER04            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER05            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER06            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER07            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER08            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER09            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER10            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER11            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER12            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER20            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER21            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER22            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER23            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER01            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER01            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER02            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER01            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER02            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER01            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER02            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER03            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER04            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+SERVER05            : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+

@@ -1,0 +1,20 @@
+---
+# tasks file for ansibleserver-configure
+
+# work in progress
+
+- name: Install ansible
+
+- name: "pip proxy hosts"
+
+- name: "install pip"
+
+- name: "install pip PyVmomi"
+  ansible.builtin.shell: pip install pyvmomi
+
+- name: Enable vmware_vm_inventory ansbiel plugin in ansible.cfg
+
+- name: Install Vsphere Certs
+
+- name: Install vsphere-automation-sdk-python
+  ansible.builtin.shell: pip install --upgrade git+https://github.com/vmware/vsphere-automation-sdk-python.git

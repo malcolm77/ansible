@@ -1,0 +1,65 @@
+---
+
+### Run command ansible-playbook -i hosts -k -K site.yml
+### Run using SSH keys   ansible-playbook -i hosts-QUALIF site.yml
+### Run test ansible-playbook -i hosts-test site.yml
+### Run KEVIN ansible-playbook -i hosts-kevin site.yml
+### Run with password vault ansible-playbook -i /home/mphadmin/ansible-scripts-CBR/hosts-kevin /home/mphadmin/ansible-scripts-CBR/testdeploy.yml --vault-password-file ../MBISvaultpassword.txt
+
+# Intergration =
+# Qualification
+# test browser and fit client. Test card capture, don't add data, justchekcthat it loads
+# ssh-copy-id
+
+# Add a paramater for a tag vesrion.
+
+
+- name: Apply common configuration to all hosts
+  hosts: Jenkins # Building on JENKINS-SLAVE for now, will be moved to a diferent host a a last stage
+  remote_user: root
+  become: true
+  become_user: jenkins
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars_files:   # https://hectormartinez.dev/posts/ansible-04-managing-variables-facts/
+    # Variables for package configuraiton,
+    # Expecte values: vars/variablesIntegration.yml OR vars/variablesQualification.yml OR vars/trunk.yml (to be deprecated)
+    - vars/variablesIntegration.yml
+
+  roles:
+  -  build
+
+- name: Deploy MBIS to host
+  hosts: mbis
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars_files:   # https://hectormartinez.dev/posts/ansible-04-managing-variables-facts/
+    # Variables for package configuraiton,
+    # Expecte values: vars/variablesQualification.yml OR vars/variablesQualification.yml OR vars/trunk.yml (to be deprecated)
+    - vars/variablesIntegration.yml
+
+  roles:
+  - mbis-notify
+  - mbis-shutdown
+  - mbis-install-custo
+  - mbis-start
+
+  vars:
+  - ansible_python_interpreter: /usr/bin/python3
+  - NotifyMessage: "Custo packages will be deployed to the server in 5min, please save your work."
+
+
+# - name: Copy logs to repo server
+#   hosts: repo # Building on JENKINS-SLAVE for now, will be moved to a diferent host a a last stage
+#   remote_user: root
+#   become: true
+#   become_user: apache
+#   become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+#   roles:
+#   -  mbis-copylogs

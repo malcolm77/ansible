@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: stop NTP service
+    service:
+      name: ntpd
+      state: stopped
+  - name: force update
+    command: ntpd -qgd
+  - name: start NTP service
+    service:
+      name: ntpd
+      state: started
+  - name: restart SSSD service
+    service:
+      name: sssd
+      state: restarted

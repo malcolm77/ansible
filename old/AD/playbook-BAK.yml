@@ -1,0 +1,15 @@
+---
+- hosts:  RBIWS-VPD-PNS01
+  tasks:
+  - name: Copy installer
+    copy:
+      src: /home/svc_ansible/playbooks/AD/join-ad.sh
+      dest: /tmp
+  - name: Copy kerberos file
+    copy:
+      src: /home/svc_ansible/playbooks/AD/krb5.conf.pdc
+      dest: /tmp/krb5.conf
+  - name: Copy sssd.conf file
+    copy:
+      src: /home/svc_ansible/playbooks/AD/sssd.conf.pdc
+      dest: /tmp/sssd.conf

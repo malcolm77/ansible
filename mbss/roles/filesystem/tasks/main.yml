@@ -1,0 +1,13 @@
+---
+# tasks file for filesystem
+#
+#
+- name: Create file systems
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/mapper/rootvg-optmbsslv
+
+- name: Create file systems
+  community.general.filesystem:
+    fstype: ext4
+    dev: /dev/mapper/rootvg-optmbsslogslv

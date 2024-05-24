@@ -1,0 +1,21 @@
+---
+
+- name: "Shutdown of SSO services"
+  become: true
+  become_user: bis
+  become_method: sudo
+  become_flags: -i
+  ansible.builtin.shell: "/opt/bis/scripts/{{ item.shutdown_script }}"
+  args:
+    executable: /bin/bash
+    chdir: "/opt/bis/scripts"
+  when: item.package_name in ansible_facts.packages
+  #when: ansible_facts.services[item.service_name] is defined and ansible_facts.services[item.service_name].state == 'running'
+  with_items: "{{ mbis_shutdown_package_service_names }}"
+  register: result
+  ignore_errors: yes
+  changed_when:
+    - "result.stdout is defined and 'Stopping' in result.stdout"
+    - "result.stdout is defined and 'Killing' in result.stdout"
+    #- "result.stdout is undefined"
+

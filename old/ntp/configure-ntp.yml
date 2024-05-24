@@ -1,0 +1,25 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: remove old ntp servers
+    replace:
+      path: /etc/ntp.conf
+      regexp: '(^server*)'
+      replace: '# \1'
+      backup: yes
+  - name: add new NTP server
+    lineinfile:
+      path: /etc/ntp.conf
+      line: server xxx.xxx.xxx.xxx iburst
+      create: yes
+  - name: stop NTP service
+    service:
+      name: ntpd
+      state: stopped
+  - name: force update
+    command: ntpd -q
+  - name: start NTP service
+    service:
+      name: ntpd
+      state: started

@@ -1,0 +1,14 @@
+# Fix the DNS settings of an interface
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: install python
+    ansible.builtin.yum:
+      name: python39
+      state: installed

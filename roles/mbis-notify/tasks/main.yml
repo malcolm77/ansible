@@ -1,0 +1,18 @@
+---
+# tasks file for mbis-notify
+
+
+
+- name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+  ansible.builtin.pause:
+  when: Environment_lock != "no"
+
+- name: Send Wall message to current users
+  ansible.builtin.shell: wall "{{ NotifyMessage }}"
+  become: true
+  become_user: root
+
+# Pause for 5 minutes allow users to finish.
+- name: Pause for to allow user to respond to wall message
+  pause:
+    minutes: 2

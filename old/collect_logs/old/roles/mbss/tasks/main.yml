@@ -1,0 +1,57 @@
+- name: Get tdagent ERROR logs
+  block:
+    - name: find recent ERROR logs
+      find:
+        path: "{{ src_path }}ERROR"
+        patterns: "{{ base }}ERROR.{{ date }}*"
+      register: logs
+    
+    - name: Copy recent ERROR logs
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ dest_path }}" 
+      with_items: "{{ logs.files }}"
+
+- name: Get tdagent INFO logs
+  block:
+    - name: find recent INFO log
+      find:
+        path: "{{ src_path }}INFO"
+        patterns: "{{ base }}INFO.{{ date }}*"
+      register: logs
+    
+    - name: Copy recent INFO logs
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ dest_path }}" 
+      with_items: "{{ logs.files }}"
+
+- name: Get tdagent DEBUG logs
+  block:
+    - name: find recent DEBUG log
+      find:
+        path: "{{ src_path }}DEBUG"
+        patterns: "{{ base }}DEBUG.{{ date }}*"
+      register: logs
+
+    - name: Copy recent DEBUG logs
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ dest_path }}" 
+      with_items: "{{ logs.files }}"
+
+- name: Get tdagent WARN logs
+  block:
+    - name: find recent WARN log
+      find:
+        path: "{{ src_path }}WARN"
+        patterns: "{{ base }}WARN.{{ date }}*"
+      register: logs
+
+    - name: Copy recent WARN logs
+      ansible.builtin.fetch:
+        src: "{{ item.path }}"
+        dest: "{{ dest_path }}" 
+      with_items: "{{ logs.files }}"
+
+

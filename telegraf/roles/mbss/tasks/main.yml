@@ -1,0 +1,26 @@
+- name: Copy bash scripts
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /usr/local/bin/telegraf/probes
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+  loop:
+    - mbss-latent-count.sh
+    - mbss-person-count.sh
+  
+- name: Copy conf Scripts
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /etc/telegraf/telegraf.d
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+  loop:
+    - mbss-latent-count.conf
+    - mbss-person-count.conf
+
+- name: Restart Telegraf service
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted

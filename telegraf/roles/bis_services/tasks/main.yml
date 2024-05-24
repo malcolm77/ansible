@@ -1,0 +1,21 @@
+- name: Copy script file
+  ansible.builtin.copy:
+    src: service_bis.sh
+    dest: /usr/local/bin/telegraf/probes/service_bis.sh
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+
+- name: Copy conf file
+  ansible.builtin.copy:
+    src: bis_services.conf
+    dest: /etc/telegraf/telegraf.d/bis_services.conf
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+
+- name: Restart Telegraf service
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted
+

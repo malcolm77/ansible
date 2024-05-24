@@ -1,0 +1,11 @@
+---
+- name: Collect Logs
+  gather_facts: yes
+  become: yes
+  hosts: TERA
+
+  tasks:
+    - name: Collect tera.log from all machines
+      ansible.builtin.fetch:
+        src: /opt/bis/log/tera.log
+        dest: /tmp/logs/

@@ -1,0 +1,12 @@
+---
+- name: date test
+  hosts: localhost
+
+  tasks:
+#   - name: Get month     
+#     debug:
+#       var: ansible_date_time.month
+# 
+  - name: step 2
+    debug:
+      msg: "{{ansible_date_time.year }}{{ ansible_date_time.month }}{{ ansible_date_time.day }}"

@@ -1,0 +1,10 @@
+---
+# This playbook will view the contents of a file
+
+- name: Views contents of a file
+  hosts: all
+  become: true
+  vars:
+     contents: "{{ lookup('file', '/etc/resolv.conf') }}"
+  tasks:
+     - debug: msg="The value of /etc/resolv.conf is {{ contents }}"

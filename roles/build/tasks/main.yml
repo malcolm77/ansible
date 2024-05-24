@@ -1,0 +1,55 @@
+---
+# tasks file for build
+
+# tasks file for ping
+- include: ping.yml
+# confirm how ot checkout correct version to build
+# should production builds be download from Nexus
+# Moving forward we want to debuild and deploy a BETA version to NEXUS repo,
+
+# this will be used until I get export contorl access to Nexus
+
+- name: SVN checkout
+  subversion:
+    repo: "{{ packageCheckoutBrachTag }}"
+    dest: "{{ aucjacicCheckoutConfigPath }}"
+    username: "g565928"
+    password: "Indy2pinguy$"
+    in_place: yes
+  register: result
+
+
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result
+
+
+- name: "ANT build"
+  ansible.builtin.shell: 'ant -f "{{ aucjacicCheckoutConfigPath }}"/build.xml'
+
+- name: "Delete target folder on repo"
+  ansible.builtin.shell: ssh root@xxx.xxx.xxx.xxx 'rm -Rf "{{ repoPath }}"'
+  ignore_errors: yes
+
+# scp is used instead copy because copy only support transfering between ansible and target, not between remote hosts
+- name: "Transfer custo package to repo, and MBSS config"
+  ansible.builtin.shell: |
+    ssh root@xxx.xxx.xxx.xxx "mkdir -p {{repoPath}}/release"
+    scp -r -o StrictHostKeyChecking=no {{aucjacicCheckoutConfigPath}}/release root@xxx.xxx.xxx.xxx:{{repoPath}}
+    scp -r -o StrictHostKeyChecking=no {{aucjacicCheckoutConfigPath}}/conf_externals/CBR_QUALIF root@xxx.xxx.xxx.xxx:{{repoPath}}
+  # scp -r -o StrictHostKeyChecking=no {{aucjacicCheckoutConfigPath}}/conf_externals/CBR_QUALIF root@xxx.xxx.xxx.xxx:{{repoPath}}
+
+
+- name: "Rename custo packages in repo"
+  ansible.builtin.shell: |
+    ssh root@xxx.xxx.xxx.xxx 'cd {{ repoPath }}/release/backend/Custo/; for f in *.rpm; do cp $f `echo $f | cut -d_ -f1`.rpm ; done'
+    ssh root@xxx.xxx.xxx.xxx 'cp {{ repoPath }}/release/backend/Custo/bis-customization-backend* {{ repoPath }}/release/backend/Custo/bis-customization-backend-mbis.rpm'
+    ssh root@xxx.xxx.xxx.xxx 'cp {{ repoPath }}/release/backend/Custo/bis-customization-dbm-oracle* {{ repoPath }}/release/backend/Custo/bis-customization-dbm-oracle-mbis.rpm'
+    ssh root@xxx.xxx.xxx.xxx 'cp {{ repoPath }}/release/backend/Custo/bis-customization-des-mbis* {{ repoPath }}/release/backend/Custo/bis-customization-des-mbis.rpm'
+    ssh root@xxx.xxx.xxx.xxx 'cp {{ repoPath }}/release/backend/Custo/bis-customization-des-mig* {{ repoPath }}/release/backend/Custo/bis-customization-des-mig-mbis.rpm'
+    ssh root@xxx.xxx.xxx.xxx 'cp {{ repoPath }}/release/backend/Custo/bis-customization-elk* {{ repoPath }}/release/backend/Custo/bis-customization-elk-mbis.rpm'
+    ssh root@xxx.xxx.xxx.xxx 'cd {{ repoPath }}/release/frontend/Custo/; for f in *.zip; do cp $f `echo $f | cut -d_ -f1`.zip ; done'
+
+- name: "Change owner of packges on repo to apache"
+  ansible.builtin.shell: ssh root@xxx.xxx.xxx.xxx 'chown -R apache.apache "{{ repoPath }}"'

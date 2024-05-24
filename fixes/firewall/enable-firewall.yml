@@ -1,0 +1,141 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: start and enable firewall service
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+      enabled: true
+
+  - name: open firewall for subnet 61
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 18
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 59
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 2
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 79
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 60
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall for subnet 1
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 78
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 56
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 22
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 8
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 58
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 76
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 29
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+  - name: open firewall for subnet 8
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+
+  - name: Change LogDenied option to all
+    ansible.builtin.lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      search_string: 'LogDenied=off'
+      line: 'LogDenied=all'
+
+  - name: Change AllowZoneDrifting option to no
+    ansible.builtin.lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      search_string: 'AllowZoneDrifting=yes'
+      line: 'AllowZoneDrifting=no'
+
+  - name: Restart firewall service
+    ansible.builtin.service:
+      name: firewalld
+      state: restarted
+      enabled: true
+

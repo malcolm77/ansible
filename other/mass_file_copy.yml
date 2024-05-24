@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Copy file 
+    copy:
+      src: "{{ source }}"
+      dest: "{{ destination }}"
+      owner: "{{ owner }}"
+      group: "{{ group }}"
+      mode: "{{ mode }}"

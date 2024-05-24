@@ -1,0 +1,20 @@
+# Create a new domain mailbox
+---
+- hosts: MAILSERVERS
+  remote_user: ansible
+  become: yes 
+  vars:
+    password: nga               # domain password
+    # password: $agem001        # NextGen password
+
+  tasks:
+    - name: Add the user
+      user:
+        name: "{{ mailboxname }}"
+        comment: Livescan Mailbox
+        shell: /sbin/nologin
+    - name: Set the password
+      user:
+        name: "{{ mailboxname }}"
+        update_password: always
+        password: "{{ password|password_hash('sha512') }}"

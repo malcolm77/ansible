@@ -1,0 +1,18 @@
+# Find systems that are NOT patched
+# You will have to change the kernal version depending on what you are looking for
+---
+- hosts: all
+  tasks:
+  - name: RHEL6
+    when: 
+      - ansible_distribution_major_version == '6'
+      - ansible_facts['kernel'] != "2.6.32-754.35.1.el6.x86_64"
+    debug:
+      msg: "NOT Patched"
+
+  - name: RHEL7
+    when: 
+      - ansible_distribution_major_version == '7'
+      - ansible_facts['kernel'] != "3.10.0-1160.15.2.el7.x86_64"
+    debug:
+      msg: "NOT Patched"

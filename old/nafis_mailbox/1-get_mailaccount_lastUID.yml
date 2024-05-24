@@ -1,0 +1,14 @@
+---
+# This playbook is used to query all 4 PROD mailservers for the UID used.
+# It does this by extracting the last line of the /etc/passwd file.
+
+- name: Queries all mailservers for the last UID used 
+  hosts: mailservers
+  tasks:
+    - name: Extract last line of /etc/passwd
+      command: tail -1 /etc/passwd
+      register: last_uid
+
+    - name: Display last line of /etc/passwd from all mailservers
+      debug:
+        msg: "{{last_uid.stdout}}"

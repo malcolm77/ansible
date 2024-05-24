@@ -1,0 +1,16 @@
+---
+- name: Collect Logs
+  gather_facts: yes
+  become: yes
+  hosts: SERVER40
+  vars:
+    error: "INFO"
+    year: "2023"
+    month: "06"
+    day: "16"
+    error_pattern: "morphobss-ERROR.{{ year }}-{{ month }}-16*"
+
+  tasks:
+    - name: Get ERROR logs
+      debug: 
+        msg: "{{ error_pattern }}"

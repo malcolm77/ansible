@@ -1,0 +1,87 @@
+---
+# tasks file for mbis-start
+
+
+
+# bis user
+- name: "sh /opt/bis/scripts/ConfigLoader.sh"
+  ansible.builtin.shell: "sh /opt/bis/scripts/ConfigLoader.sh"
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+
+
+
+- name: "sh /opt/bis/scripts/JscLoader"
+  ansible.builtin.shell: "sh /opt/bis/scripts/JscLoader"
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+
+
+
+- name: "sh /opt/bis/scripts/JwfLoader"
+  ansible.builtin.shell: "sh /opt/bis/scripts/JwfLoader"
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+
+- name: "sh /opt/bis/auth/scripts/AuthMigrator.sh dat db /opt/bis/auth/data"
+  ansible.builtin.shell: "sh /opt/bis/auth/scripts/AuthMigrator.sh dat db /opt/bis/auth/data"
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+# Compare
+# C:\repos\mph-svn-master-01\ptkads\opt\bis_CBR_INTEGRATION\wildfly-20.0.1.Final\standalone\configuration\mbis.xml
+# C:\repos\mph-svn-master-01\ptkads\opt\bis\jboss\standalone\configuration\mbis.xml
+
+# Compare
+# C:\repos\mph-svn-master-01\ptkads\opt\bis\etc\bis
+# C:\repos\mph-svn-master-01\ptkads\opt\bis_CBR_QUALIF\etc\bis
+
+
+
+- name: "sh /opt/bis/scripts/AllStartup"
+  ansible.builtin.shell: "sh /opt/bis/scripts/AllStartup"
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+
+
+
+- name: "sh /opt/bis/scripts/DsmStartup"
+  ansible.builtin.shell: "sh /opt/bis/scripts/DsmStartup"
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+
+
+
+
+# Test from Citrix
+# Update environments https://confluence-mogl.devops.in.idemia.com/display/AUCJACIC/Tests+environments+in+CBR
+

@@ -1,0 +1,6 @@
+---
+# handlers file for testrole
+
+- name: Exmaplehandlers
+  ansible.builtin.debug:
+    msg: "echo exmaplehandlers"

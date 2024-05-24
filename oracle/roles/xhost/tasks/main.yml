@@ -1,0 +1,10 @@
+---
+- name: Install xhost
+  yum:
+    name: xhost
+    state: present
+
+- name: Install xterm
+  yum:
+    name: xterm
+    state: present

@@ -1,0 +1,16 @@
+---
+#####
+# ansible-playbook -i hosts.ini StopAll.yml
+#####
+
+- name: Start and Stop Services on all MBIS servers
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  roles:
+    - role: allshutdown
+      tags: StopAll
+    # - role: fesmigshutdown
+    # - role: termigshutdown
+    #   when 07

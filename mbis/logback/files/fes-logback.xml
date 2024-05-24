@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false" scan="true" scanPeriod="30 seconds">
+
+    <contextName>${service.logfile.prefix}</contextName>
+    <property name="LOG_PATH" value="${BIS_LOG_HOME}" />
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH:-log}/${CONTEXT_NAME}.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${CONTEXT_NAME}.log.%i.zip</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>3</maxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+          <maxFileSize>524288000</maxFileSize>
+        </triggeringPolicy>
+
+        <encoder>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%logger] \(%file:%line\) - %message%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%logger] \(%file:%line\) - %message%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- This will allow each docker/kubernetes deployment to control console vs log file output -->
+    <!-- JAVA_OPTS in docker/kubernetes will supply correct properties so logging will go to STDOUT else FILE is the default with no property supplied -->
+        <root level="INFO" />
+
+    <if condition='property("service.logfile.appender").equalsIgnoreCase("all")'>
+        <then>
+            <root>
+                <appender-ref ref="FILE"/>
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </then>
+        <else>
+                        <if condition='property("service.logfile.appender").equalsIgnoreCase("stdout")'>
+                                <then>
+                                        <root>
+                                                <appender-ref ref="STDOUT"/>
+                                        </root>
+                                </then>
+                                <else>
+                                        <root>
+                                                <appender-ref ref="FILE"/>
+                                        </root>
+                                </else>
+                        </if>
+        </else>
+    </if>
+
+    <logger name="com.idemia" level="INFO" />
+    <logger name="com.printrak" level="INFO" />
+    <logger name="com.morpho" level="INFO" />
+    <logger name="com.morphotrak" level="INFO" />
+    <logger name="morpho.tera" level="INFO" />
+
+    <logger name="org.apache.commons" level="INFO" />
+    <logger name="org.apache.http" level="INFO" />
+    <logger name="org.apache.pdfbox" level="INFO" />
+    <logger name="org.jboss" level="INFO" />
+
+    <logger name="com.morphotrak.migration" level="INFO" />
+    <logger name="track.com.morphotrak.migration" level="INFO" />
+
+    <!-- WFS specific logger configuration -->
+    <if condition='property("service.logfile.prefix").equalsIgnoreCase("wfs")'>
+        <then>
+            <logger name="ActionCore" level="INFO" />
+            <logger name="CfgStdActionCore" level="INFO" />
+            <logger name="CfgStdActionRep" level="INFO" />
+            <logger name="PruemActionCore" level="INFO" />
+            <logger name="PruemActionRep" level="INFO" />
+            <logger name="CfgStdActionRepRn" level="INFO" />
+        </then>
+    </if>
+
+    <!-- STS specific logger configuration -->
+    <if condition='property("STS_NAME").equalsIgnoreCase("sts-remote01x")'>
+        <then>
+            <logger name="com.morphotrak.sts" level="INFO" />
+        </then>
+    </if>
+
+</configuration>
+

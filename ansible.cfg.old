@@ -1,0 +1,15 @@
+# [inventory]
+# enable_plugins = 'host_list', 'script', 'auto', 'yaml', 'ini', 'toml', 'vmware_vm_inventory'
+
+
+# [privilege_escalation]
+# become = yes
+# become_method = su
+# become_flags = '-l'
+
+[defaults]
+collections_paths = ./ansible_collections
+# inventory = ./inventory
+# log_path = ./ansible.log
+
+ansible_python_interpreter= /usr/bin/python3

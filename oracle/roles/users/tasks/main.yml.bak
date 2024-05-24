@@ -1,0 +1,52 @@
+---
+- name: Create oinstall groip
+  ansible.builtin.group:
+    name: oinstall
+    gid: 54321
+    state: present
+- name: Create oinstall groip
+  ansible.builtin.group:
+    gid: 54322
+    name: dba
+    state: present
+- name: Create oinstall groip
+  ansible.builtin.group:
+    gid: 54323
+    name: oper
+    state: present
+- name: Create oinstall groip
+  ansible.builtin.group:
+    gid: 54324
+    name: backupdba
+    state: present
+- name: Create oinstall groip
+  ansible.builtin.group:
+    gid: 54325
+    name: dgdba
+    state: present
+- name: Create oinstall groip
+  ansible.builtin.group:
+    gid: 54326
+    name: kmdba
+    state: present
+- name: Create oinstall groip
+  ansible.builtin.group:
+    gid: 54327
+    name: asmdba
+    state: present
+- name: Create oinstall groip
+  ansible.builtin.group:
+    gid: 54330
+    name: racdba
+    state: present
+
+- name: Create oracle user
+  ansible.builtin.user:
+    name: oracle
+    uid: 54321
+    group: oinstall
+    groups: dba,oper,backupdba,dgdba,kmdba,asmdba,racdba
+
+- name: Create grid user
+$ id oracle
+uid=54321(oracle) gid=54321(oinstall) groups=54321(oinstall),54322(dba),54323(oper),54324(backupdba),54325(dgdba),54326(kmdba),54327(asmdba),54330(racdba)1

@@ -1,0 +1,99 @@
+
+NOTE: Anything in /home/username/Ansible should also be available in /home/ansible/Ansible 
+      and is also available from http://xxx.xxx.xxx.xxx:3000/Idemia/Ansible.git
+
+# Change to the ansible folder
+[username@SERVER03 ~]$ cd Ansible/mbis
+
+# Stop Everything
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/stop.yml --tags=ALL                                                  
+
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook Ansible/mbis/restart/stop.yml --tags=FESMIG,FES 
+
+# Remove old log files
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook removelogs/main.yml
+
+# Start Artemis
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/start.yml --tags=WMS
+
+---- wait 1 minute ----
+
+# Start Keyclock
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/start.yml --tags=KEY
+
+---- wait 1 minute ----
+
+# Start AppServer
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/start.yml --tags=APP
+
+# watch log during startup - for a short while, to make sure no Java errors appear. ( look for "started in 72734ms" )
+SERVER07:bis> AppServerLog
+
+# Backup migration status table using:
+D:\NextGen\Oracle\backup_migration_status.sql
+
+# Create new csv files
+SERVER08:bis> cd /ActiveFiles/transfer/pub/des/input/mmo2bis/insertPerson/
+
+SERVER07:bis> find repo-persons -type f -name *.nist | awk -F "/" '{print $NF}' | awk -F "-" '{printf("%09d-%04d,%09d\n",$2,$4,$2)}' > import-20220729.csv
+# SERVER08:bis> find repo-persons -type f -name *.nist | awk -F "/" '{print $NF}' | awk -F "-" '{printf("%09d-%04d,%09d\n",$2,$4,$2)}' > import-20220729.csv
+
+# check csv file
+SERVER08:bis> head -10 import-20220729.csv
+
+# configure tdatabase
+SERVER08:bis> curl --cert /opt/bis/etc/client.cert.pem:Morphotrak --key /opt/bis/etc/client.key.pem -v -T /ActiveFiles/transfer/pub/des/input/mmo2bis/insertPerson/import-20220729.csv https://bisapp.mbis-dev.idemia.com:8443/DbFileServerServlet/?filename=/migration/data/migration-incident-person.csv
+
+# generate txt file
+SERVER08:bis> find repo-persons -type f -name *.nist | tail -n +400001 > import-20220729.txt
+
+# check csv file
+SERVER08:bis> head -10 import-20220729.txt
+
+# transfer txt file to DBM
+[oracle@pbidb-sdc-png01 ~]$ scp ansible@SERVER08:/ActiveFiles/transfer/pub/des/input/mmo2bis/insertPerson/import-20220729.txt /home/oracle/migration
+
+# run sqlldr
+[oracle@pbidb-sdc-png01 ~]$ sqlldr userid=cview/Printrak@//pngdba-sdc-scan:1521/PROD1PDB control=/home/oracle/source_mbis-5.12.1/utilities/migration_status_oracle_loader.txt data=/home/oracle/migration/import-Batch01.txt log=/home/oracle/migration/import-Batch01-status.log
+
+ 
+
+# check migration status using:
+D:\NextGen\Oracle\migration_status.sql
+or 
+[oracle@pbidb-sdc-png01 ~]$ track
+
+# start DES-MMO2BIS
+SERVER08:bis> DesStartup mmo2bis-person
+bit
+# start the FesMig
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/start.yml --tags=FESMIG
+
+# check migration status using:
+D:\NextGen\Oracle\migration-status.sql
+
+# start the TeraMig
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/start.yml --tags=TERAMIG
+
+# check migration status using:
+D:\NextGen\Oracle\migration-status.sql
+
+# Start FES and TERA on remaining servers
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/start.yml --tags=FES,TERA
+
+
+-------------------------------------- WHEN RUN HAS COMPLETED --------------------------------------
+
+# Stop Everything
+[username@SERVER03 ~/Ansible/mbis]$ ansible-playbook restart/stop.yml --tags=ALL
+
+# Collect log MBIS and MBSS logs
+[ansible@SERVER08 ~]$ ./get-logs.sh
+	
+# Collect SQL information
+[oracle@SERVER01 ~/scripts]$ ./get_processing_times.sh
+[oracle@SERVER01 ~/scripts]$ ./get_migration_status.sh
+
+# Copy everything from SERVER08:/ActiveFiles/all_logs to USB and give it to Paul B.
+D:\NextGen\all_logs>scp ansible@SERVER08:/ActiveFiles/all_logs/* .
+

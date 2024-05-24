@@ -1,0 +1,3 @@
+---
+- name: include other playbook
+  ansible.builtin.import_playbook: ping/ping.yml

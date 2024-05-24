@@ -1,0 +1,27 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: Change LogDenied option to all
+    ansible.builtin.lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      search_string: 'LogDenied=off'
+      line: 'LogDenied=all'
+
+  - name: Change AllowZoneDrifting option to no
+    ansible.builtin.lineinfile:
+      path: /etc/firewalld/firewalld.conf
+      search_string: 'AllowZoneDrifting=yes'
+      line: 'AllowZoneDrifting=no'
+
+  - name: Restart firewall service
+    ansible.builtin.service:
+      name: firewalld
+      state: restarted
+      enabled: true
+

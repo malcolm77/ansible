@@ -1,0 +1,12 @@
+# Fix the DNS settings of an interface
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: Fix the DNS server list
+    ansible.builtin.command: nmcli con mod ens192 ipv4.dns "xxx.xxx.xxx.xxx xxx.xxx.xxx.xxx"
+
+  - name: Fix the DNS search domain
+    ansible.builtin.command: nmcli con mod ens192 ipv4.dns-search "nafis.cicz.gov.au"

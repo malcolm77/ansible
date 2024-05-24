@@ -1,0 +1,20 @@
+---
+
+- name: Start and Stop Services on all MBIS servers
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  roles:
+    - role: fesstartup
+      tags: startFES
+    - role: desstartup
+      tags: startDES
+    - role: terastartup
+      tags: startTERA
+    - role: fesmigstartup
+      tags: startFESMIG
+    - role: teramigstartup
+      tags: startTERAMIG
+
+

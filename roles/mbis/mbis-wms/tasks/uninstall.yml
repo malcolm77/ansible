@@ -1,0 +1,17 @@
+
+
+- name: Removal WMS packages
+  block:
+  - name: "Removal of MBIS WMS STD packages - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: absent
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+
+- debug :
+    var: _result

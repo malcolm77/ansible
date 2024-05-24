@@ -1,0 +1,18 @@
+---
+
+
+- name: "Shutdown of MBIS services"
+  become_user: bis
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  ansible.builtin.shell: "/opt/bis/scripts/{{ item.shutdown_script }}"
+  args:
+    executable: /bin/bash
+    chdir: "/opt/bis/scripts"
+  when: item.package_name in ansible_facts.packages
+  #when: ansible_facts.services[item.service_name] is defined and ansible_facts.services[item.service_name].state == 'running'
+  with_items: "{{ mbis_shutdown_package_service_names }}"
+  register: result
+  changed_when: "'Stopping' in result.stdout"

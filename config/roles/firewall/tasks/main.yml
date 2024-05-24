@@ -1,0 +1,14 @@
+---
+# tasks file for firewall
+#
+- name: start firewall
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+
+- name: open firewall ports
+  ansible.posix.firewalld:
+    port: 9100/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes

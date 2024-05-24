@@ -1,0 +1,108 @@
+# ======================================
+# RabbitMQ broker section
+# ======================================
+
+## Related doc guide: https://rabbitmq.com/configure.html. See
+## https://rabbitmq.com/documentation.html for documentation ToC.
+## see annotated example file in /etc/rabbitmq/rabbitmq.conf.example
+
+cluster_keepalive_interval = 5000
+
+# vm_memory_high_watermark.relative = 0.6
+# collect_statistics_interval = 60000
+
+max_message_size = 536870900
+# -----------------------------
+# Forward logs to SysLog
+# Syslog default host: localhost
+# You can setup these configurations to forward logs to a central Syslog server
+# Or setup rsyslog as a log collector agent
+# -----------------------------
+#log.syslog = true
+#log.syslog.host = my.syslog-server.local
+#log.syslog.port = 1514
+#log.syslog.transport = tls
+#log.syslog.protocol = rfc5424
+
+#log.syslog.ssl_options.cacertfile = /path/to/ca_certificate.pem
+#log.syslog.ssl_options.certfile = /path/to/client_certificate.pem
+#log.syslog.ssl_options.keyfile = /path/to/client_key.pem
+
+
+# IPv4
+listeners.tcp.local    = xxx.xxx.xxx.xxx:5672
+
+# You can define multiple listeners using listener names
+# listeners.tcp.other_port = 5673
+listeners.tcp.other_ip   = {{ ip_address | default(ansible_default_ipv4.address) | default(ansible_host) | default('') }}:5672
+
+## Statistics collection interval (in milliseconds). Increasing
+## this will reduce the load on management database.
+#
+collect_statistics_interval = 6000
+
+##
+## Resource Limits & Flow Control
+## ==============================
+##
+## Related doc guide: https://rabbitmq.com/memory.html.
+
+## Memory-based Flow Control threshold.
+##
+vm_memory_high_watermark.relative = 0.4
+
+
+# =======================================
+# Management section
+# =======================================
+
+
+## One of 'basic', 'detailed' or 'none'. See
+## https://rabbitmq.com/management.html#fine-stats for more details.
+management.rates_mode = none
+
+## HTTP listener and embedded Web server settings.
+# ## See https://rabbitmq.com/management.html for details.
+#
+management.tcp.port = 15672
+# management.tcp.ip   = xxx.xxx.xxx.xxx
+
+
+## Configure how long aggregated data (such as message rates and queue
+## lengths) is retained. Please read the plugin's documentation in
+## https://rabbitmq.com/management.html#configuration for more
+## details.
+## Your can use 'minute', 'hour' and 'day' keys or integer key (in seconds)
+management.sample_retention_policies.global.300    = 60
+management.sample_retention_policies.global.hour  = 600
+management.sample_retention_policies.global.day = 1800
+
+management.sample_retention_policies.basic.300   = 60
+
+management.sample_retention_policies.detailed.10 = 5
+
+
+# ======================================
+# Kernel section
+# ======================================
+
+## Timeout used to detect peer unavailability, including CLI tools.
+## Related doc guide: https://www.rabbitmq.com/nettick.html.
+##
+net_ticktime = 10
+
+##
+## Additional network and protocol related configuration
+## =====================================================
+##
+
+## Set the default AMQP 0-9-1 heartbeat interval (in seconds).
+## Related doc guides:
+##
+## * https://rabbitmq.com/heartbeats.html
+## * https://rabbitmq.com/networking.html
+##
+heartbeat = 10
+
+
+

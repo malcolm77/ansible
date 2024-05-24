@@ -1,0 +1,22 @@
+---
+
+- name: Install and Configure Telegraf
+  gather_facts: yes
+  become: yes
+  hosts: all
+  remote_user: svc_ansible
+  serial: 1
+  vars_files:
+    - ~/svc_ansible.yml
+
+  roles:  
+    - role: install
+      tags: install
+    - role: passwords
+      tags: passwords
+    - role: software
+      tags: software 
+    - role: wfmq
+      tags: wfmq
+    - role: bis_services
+      tags: bis_services

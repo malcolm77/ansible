@@ -1,0 +1,28 @@
+---
+
+- name: Create BaseOS and AppStream repos
+  block:
+  - name: Add RHEL8-BaseOS repo to rhel8 file
+    yum_repository:
+      name: "{{ RedHat8_BaseOS_repo_name }}"
+      description: RedHat 8 Repository - BaseOS
+      file: IdemiaOS
+      baseurl: "{{ RedHat8_BaseOS_repo_URL }}"
+      enabled: yes
+      gpgcheck: no
+    become: yes
+    become_user: root
+
+  - name: Add RHEL8-AppStream repo to rhel8 file
+    yum_repository:
+      name: "{{ RedHat8_AppStream_repo_name }}"
+      description: RedHat 8 Repository - AppStream
+      file: IdemiaOS
+      enabled: yes
+      baseurl: "{{ RedHat8_AppStream_repo_URL }}"
+      gpgcheck: no
+    become: yes
+    become_user: root
+  when:
+    - ansible_facts['distribution'] == 'RedHat'
+    - ansible_facts['distribution_major_version'] == '8'

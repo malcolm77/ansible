@@ -1,0 +1,20 @@
+---
+# tasks file for lvolume
+
+- name: Resize /var/log lvol
+  community.general.lvol:
+    vg: rootvg 
+    lv: varloglv
+    size: 8g
+
+- name: Create /opt/bis lvol
+  community.general.lvol:
+    vg: rootvg 
+    lv: optbislv
+    size: 30g
+
+- name: Create /opt/bis/log lvol
+  community.general.lvol:
+    vg: rootvg 
+    lv: optbisloglv
+    size: 8g

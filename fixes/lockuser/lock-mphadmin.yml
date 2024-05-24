@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - "~/svc_ansible.yml"
+
+  tasks:
+  - name: Lock the mphadmin account
+    ansible.builtin.user:
+      name: mphadmin
+      shell: "/sbin/nologin"
+      password_lock: true
+

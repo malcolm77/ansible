@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: start firewall service
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+
+  - name: open firewall ports
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+

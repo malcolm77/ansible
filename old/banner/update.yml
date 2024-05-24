@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Update banner message file
+    copy:
+      src: /var/lib/awx/projects/prod-playbooks/banner/acic-banner.txt
+      dest: /etc/ssh/acic-banner.txt
+      owner: root 
+      group: root
+      mode: '0644'

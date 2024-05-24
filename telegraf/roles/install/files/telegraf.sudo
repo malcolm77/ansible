@@ -1,0 +1,2 @@
+#Defaults:telegraf !requiretty, use_pty,umask=0027, ignore_dot,env_reset,passwd_timeout=1
+%telegraf ALL=(ALL) NOPASSWD: ALL

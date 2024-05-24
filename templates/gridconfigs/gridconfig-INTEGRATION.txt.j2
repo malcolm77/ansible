@@ -1,0 +1,12 @@
+{{ hostname | default(inventory_hostname_short) }};BR1;BR;-b;stop
+{{ hostname | default(inventory_hostname_short) }};DCP1;DC;-O -Dteragrid.dc.partitions=0-11 -O -Dteragrid.dc.dbdir=/data/mbss/persons -O -Dteragrid.dc.datatype=persons -b;stop
+{{ hostname | default(inventory_hostname_short) }};DCL1;DC;-O -Dteragrid.dc.partitions=0-11 -O -Dteragrid.dc.dbdir=/data/mbss/latents -O -Dteragrid.dc.datatype=latents -b;stop
+{{ hostname | default(inventory_hostname_short) }};IC1;IC;-b;stop
+{{ hostname | default(inventory_hostname_short) }};CU1;CU;-c 5 -b;stop
+{{ hostname | default(inventory_hostname_short) }};CC1;CC;-b;stop
+{{ hostname | default(inventory_hostname_short) }};MU1;MU;-b;stop
+{{ hostname | default(inventory_hostname_short) }};MU2;MU;-b;stop
+{{ hostname | default(inventory_hostname_short) }};MC1;MC;-b;stop
+{{ hostname | default(inventory_hostname_short) }};LU1;LU;-b;stop
+{{ hostname | default(inventory_hostname_short) }};LU2;LU;-b;stop
+

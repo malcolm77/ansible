@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Copy veeam kmod package to server 
+    copy:
+      src: /var/lib/awx/projects/prod-playbooks/veeam/kmod-veeamsnap-xxx.xxx.xxx.xxx1-1.el7.x86_64.rpm
+      dest: /tmp
+      owner: svc_ansible
+      group: svc_ansible
+      mode: '0644' 
+  - name: copy veeam package to server
+    copy:
+      src: /var/lib/awx/projects/prod-playbooks/veeam/veeam-xxx.xxx.xxx.xxx1-1.el7.x86_64.rpm
+      dest: /tmp
+      owner: svc_ansible
+      group: svc_ansible
+      mode: '0644' 
+  - name: Install pre-req packages 
+    yum: 
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - libacl
+      - libattr 
+      - lvm2 
+      - efibootmgr 
+      - fuse 
+      - syslinux
+  - name: Install veeam kmod package 
+    yum:
+      name: /tmp/kmod-veeamsnap-xxx.xxx.xxx.xxx1-1.el7.x86_64.rpm
+      state: present
+  - name: Install veeam package 
+    yum:
+      name: /tmp/veeam-xxx.xxx.xxx.xxx1-1.el7.x86_64.rpm
+      state: present
+  - name: Cleanup #1
+    file: 
+      path: /tmp/kmod-veeamsnap-xxx.xxx.xxx.xxx1-1.el7.x86_64.rpm
+      state: absent
+  - name: Cleamup #2
+    file: 
+      path: /tmp/veeam-xxx.xxx.xxx.xxx1-1.el7.x86_64.rpm
+      state: absent

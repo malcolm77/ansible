@@ -1,0 +1,7 @@
+---
+# handlers file for mbis-frontend-mbis
+
+  - name: "restart DSM"
+    win_service:
+      name: "DSM"
+      state: restarted

@@ -1,0 +1,9 @@
+---
+- name: Create a new ext4 primary partition
+  community.general.parted:
+    device: "{{ device }}"
+    number: "{{ partition_number }}"
+    state: present
+    fs_type: "{{ filesystem_type }}"
+    part_start: "{{ volume_size }}"
+

@@ -1,0 +1,22 @@
+---
+#####
+# Configure the MBIS servers
+#####
+
+- name: Start and Stop Services on all MBIS servers
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  roles:
+    - role: fesshutdown
+      tags: stopFES
+    - role: desshutdown
+      tags: stopDES
+    - role: terashutdown
+      tags: stopTERA
+    - role: fesmigshutdown
+      tags: stopFESMIG
+    - role: teramigshutdown
+      tags: stopTERAMIG
+

@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  vars:
+    Files: []
+
+  tasks:
+  - name: Find Shutdown files
+    ansible.builtin.find:
+      path: /opt/bis/scripts
+      patterns: '*Show'
+      recurse: no
+      excludes: 'All*,Selinux*'
+    register: shutdownscripts
+  
+  - name: run scripts
+    become_user: bis
+    ansible.builtin.command: "{{ item.path }}"
+    with_items: "{{ shutdownscripts.files }}" 
+
+#  - debug: var=Files

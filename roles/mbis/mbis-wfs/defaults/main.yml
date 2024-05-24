@@ -1,0 +1,11 @@
+---
+# defaults file for mbis-wfs
+
+mbis_package_names:
+ - bis-wfs
+ - bis-ars
+ - bis-wfs-remote
+
+mbis_shutdown_package_service_names:
+  - { package_name: "bis-ars", service_name: "ars.service", shutdown_script: "ArsShutdown"}
+  - { package_name: "bis-wfs-remote", service_name: "wfs.service", shutdown_script: "WfsShutdown"}

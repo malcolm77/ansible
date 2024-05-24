@@ -1,0 +1,34 @@
+---
+- hosts: all
+  become: yes
+  ignore_errors: true
+
+  tasks:
+  - name: stop forwarder
+    command: /opt/splunkforwarder/bin/splunk stop
+
+  - name: cleanup
+    file:
+      path: /tmp/splunkforwarder-9.0.2-17e00c557dc1-linux-2.6-x86_64.rpm
+      state: absent
+
+  - name: Remove any existing splunk forwarder install
+    ansible.builtin.yum:
+      name: splunkforwarder.x86_64
+      state: absent
+
+  - name: Remove old splunk forwarder folder
+    ansible.builtin.file:
+      path: /opt/splunkforwarder
+      state: absent
+
+  - name: Remove old splunk service file
+    ansible.builtin.file:
+      path: /etc/systemd/system/SplunkForwarder.service
+      state: absent
+
+  - name: Remove old splunk service file
+    ansible.builtin.file:
+      path: /etc/init.d/splunk
+      state: absent
+

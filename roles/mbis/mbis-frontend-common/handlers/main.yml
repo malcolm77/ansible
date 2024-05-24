@@ -1,0 +1,14 @@
+---
+# handlers file for mbis-frontend-common
+
+  - name: 'restart License client'
+    ansible.windows.win_service:
+      name: "{{ item }}"
+      state: restarted
+    with_items:
+      - "Multiprotect"
+
+  - name: 'restart Windows License client'
+    ansible.windows.win_service:
+      name: Multiprotect License Service
+      state: restarted

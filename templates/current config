@@ -1,0 +1,21 @@
+maxClientCnxns=0
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/var/lib/zookeeper
+dataLogDir=/var/lib/zookeeper/datalog
+clientPort=2181
+maxSessionTimeout=600000
+autopurge.snapRetainCount=3
+autopurge.purgeInterval=1
+#leaderServes=no
+
+authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+requireClientAuthScheme=sasl
+allowSaslFailedClients=false
+
+# renew server-side ticket once an hour. 1000*60*60 = 3600000 milliseconds
+jaasLoginRenew=3600000
+
+admin.serverPort=2180
+admin.enableServer=true

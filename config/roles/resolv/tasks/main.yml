@@ -1,0 +1,6 @@
+- name: Copy resolv.conf 
+  ansible.builtin.copy: 
+    src: resolv.conf
+    dest: /etc/resolv.conf
+    force: yes
+    mode: '0640'

@@ -1,0 +1,4 @@
+
+ansible-galaxy collection install /etc/ansible/collections/ansible_collections/ansible/posix -p /home/ridmmalcha.adm/.ansible/collections
+
+

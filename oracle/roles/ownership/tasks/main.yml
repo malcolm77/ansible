@@ -1,0 +1,40 @@
+---
+- name: create required folders
+  ansible.builtin.file:
+    state: directory
+    path: /delivery
+    owner: oracle
+    group: oinstall
+    mode: '0755'
+
+- name: set ownership
+  ansible.builtin.file:
+    path: /oracle
+    state: directory
+    recurse: yes
+    owner: grid
+    group: oinstall
+
+- name: set ownership
+  ansible.builtin.file:
+    path: /oracle/19c/database
+    state: directory
+    recurse: yes
+    owner: oracle
+    group: oinstall
+
+- name: set permissions
+  ansible.builtin.file:
+    path: /oracle
+    state: directory
+    recurse: yes
+    mode: 'g+rwx'
+
+- name: create required folders
+  ansible.builtin.file:
+    path: /delivery
+    state: directory
+    recurse: yes
+    owner: oracle
+    group: oinstall
+    mode: '0755'

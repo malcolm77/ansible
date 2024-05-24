@@ -1,0 +1,11 @@
+- name: Find the oracle alerts Logs
+  find:
+    path: /oracle/oraBase/diag/rdbms/prod/PROD1/trace/
+    patterns: "*.log"
+  register: logs
+
+- name: Copy all the MBIS logs to /all_logs/
+  ansible.builtin.fetch:
+    src: "{{ item.path }}"
+    dest: /all_logs/
+  with_items: "{{ logs.files }}"

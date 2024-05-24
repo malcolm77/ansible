@@ -1,0 +1,25 @@
+# fix the shell for a list of users
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: ansible
+
+  tasks:
+  - name: Make sure users shell is set to bash
+    ansible.builtin.user:
+      name: "{{ item }}"
+      shell: /bin/bash
+    with_items:
+      - "{{ username }}"
+    vars:
+      username:
+        #- bis
+        #- bisora
+        - mbssadmin
+        - mbssdataadmin
+        #- mbss
+        #- grid
+        #- oracle
+        #- root
+        #- ansible

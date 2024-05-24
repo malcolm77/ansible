@@ -1,0 +1,13 @@
+- name: Set FES to Debug
+  replace:
+    backup: yes
+    dest: /opt/bis/fes/etc/fes-logback.xml
+    regexp: 'DEBUG'
+    replace: 'INFO'
+
+- name: Set TERA to Debug
+  replace:
+    backup: yes
+    dest: /opt/bis/tera/etc/tera-logback.xml
+    regexp: 'DEBUG'
+    replace: 'INFO'

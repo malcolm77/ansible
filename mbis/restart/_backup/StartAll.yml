@@ -1,0 +1,34 @@
+---
+
+- name: Start and Stop Services on all MBIS servers
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  roles:
+    - role: keycloakstartup
+      tags: startKeysone
+      when: inventory_hostname in groups['KEY']
+    - role: appserverstartup
+      tags: startAppServer
+      when: inventory_hostname in groups['APP']
+    - role: artemisstartup
+      tags: startArtemis
+      when: inventory_hostname in groups['ART']
+
+    - role: fesstartup
+      tags: startFES
+      when: inventory_hostname in groups['FES']
+    - role: desstartup
+      tags: startDES
+      when: inventory_hostname in groups['DES']
+    - role: terastartup
+      tags: startTERA
+      when: inventory_hostname in groups['TERA']
+    - role: fesmigstartup
+      tags: startFESMIG
+      when: inventory_hostname in groups['FESMIG']
+    - role: teramigstartup
+      tags: startTERAMIG
+      when: inventory_hostname in groups['TERAMIG']
+

@@ -1,0 +1,21 @@
+---
+- name: Update server with latest security patches
+  hosts: all
+  gather_facts: yes
+  become: true
+  serial: 5
+  ignore_errors: yes   # intended so that if a server fails for any reason, it will still patch the other servers
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+
+  roles:
+    - role: prereqs     # install/do any pre-req steps
+      tags: pre 
+    - role: patch       # install latest security patches
+      tags: patch
+    - role: restart     # check if a restart is required, if so, do it.
+      tags: restart
+    - role: firmware    # install firmware package
+      tags: firmware

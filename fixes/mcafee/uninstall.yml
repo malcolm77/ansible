@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Remove McAfee
+    yum:
+      name: "{{ packages }}"
+      state: absent
+    vars:
+      packages:
+      - McAfeeTP.x86_64
+      - McAfeeESPFileAccess.x86_64
+      - McAfeeESPAac.x86_64
+      - McAfeeESP.x86_64
+      - McAfeeRt.x86_64
+      - MFEdx.x86_64
+      - MFEcma.x86_64
+      - MFErt.i686

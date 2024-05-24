@@ -1,0 +1,68 @@
+---
+# tasks file for mbis-cleanDB
+
+
+
+- name: "/opt/CleanDB/CleanDBM.sh, clean up the ads database try for 10min "
+  ansible.builtin.shell: "sh /opt/CleanDB/CleanDBM.sh"
+  become: true
+  become_user: root
+  async: 600
+  poll: 10
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+- name: "/opt/CleanDB/CleanMBSS.sh, clean up the matcher database, try for 10min "
+  ansible.builtin.shell: "sh /opt/CleanDB/CleanMBSS.sh"
+  become: true
+  become_user: root
+  async: 600
+  poll: 10
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+
+# to be replace with Clean_AUTHOR.sh at the next release
+- name: "runuser -l bisora -c 'sqlplus SYS/Printrak@bisdb/PROD1PDB AS SYSDBA @/opt/CleanDB/clean_AUTHOR.sql'"
+  ansible.builtin.command: runuser -l bisora -c 'sqlplus SYS/Printrak@bisdb/PROD1PDB AS SYSDBA @/opt/CleanDB/clean_AUTHOR.sql'
+  # ansible.builtin.shell: "sh /opt/CleanDB/Clean_AUTHOR.sh"
+  async: 600
+  poll: 10
+  become: true
+  become_user: root
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+
+
+  # Pause for 5 minutes allow users to finish.
+- name: Pause until you can verify the database was cleared, wait a 5min for a response.
+  pause:
+    minutes: 5
+
+
+# # check that all the units are running
+# - name: "check it"
+#   ansible.builtin.shell: "/opt/mbss/tools/adminClient.sh -C status"
+#   become: true
+#   become_user: mbssadmin
+#   register: result
+#   # failure condition TBC: https://docs.ansible.com/ansible/latest/user_guide/playbooks_error_handling.html#defining-failure
+
+# - name: Print return information from the previous task
+#   ansible.builtin.debug:
+#     var: result
+
+#delete contents of tables NOT the table !
+
+

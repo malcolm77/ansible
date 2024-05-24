@@ -1,0 +1,21 @@
+- name: Copy NextGen Repo file to server
+  copy: 
+    src: SERVER09.repo
+    dest: /etc/yum.repos.d/SERVER09.repo
+    force: yes
+
+- name: Remove old repo file
+  file:
+    path: /etc/yum.repos.d/pbimm-vsd-png03.repo
+    state: absent
+
+- name: Remove mbis old repo file
+  file:
+    path: /etc/yum.repos.d/mbis.repo
+    state: absent
+
+- name: Remove old mbss repo file
+  file:
+    path: /etc/yum.repos.d/mbss.repo
+    state: absent
+

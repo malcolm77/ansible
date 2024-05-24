@@ -1,0 +1,31 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: find old  repo  files
+    find:
+      paths: /etc/yum.repos.d
+      patterns: '*.repo'
+    register: directory_content_result
+
+  - name: Remove old repo files
+    file:
+      path: "{{ item.path }}" 
+      state: absent
+    with_items: "{{ directory_content_result.files }}" 
+    loop_control:
+      label: "{{ item.path }}" 
+
+  - name: Copy prod repo file for RHEL 6
+    when: ansible_distribution_major_version == '6'
+    get_url: 
+      url: http://pbimm-vpd-pns03:3000/Idemia/Ansible-Tower/raw/branch/master/patching/SERVER03.repo
+      dest: /etc/yum.repos.d/SERVER03.repo
+      mode: '0644'
+
+  - name: Copy prod repo file for RHEL 7
+    when: ansible_distribution_major_version == '7'
+    get_url:
+      url: http://pbimm-vpd-pns03:3000/Idemia/Ansible-Tower/raw/branch/master/patching/SERVER02.repo
+      dest: /etc/yum.repos.d/SERVER02.repo
+      mode: '0644'

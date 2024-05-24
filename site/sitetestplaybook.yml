@@ -1,0 +1,25 @@
+---
+
+- name: Install MBIS Apps (JBOSS, WFS, WMS)
+  hosts: mbis_db
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+
+  tasks:
+
+  - name: Run /home/bisora/scripts/schema/update-schemas.sh
+    ansible.builtin.command: "sh /home/bisora/scripts/schema/update-schemas.sh -U SYSTEM -P Printrak"
+    become: true
+    become_user: bisora
+    become_method: sudo
+    become_flags: '-i'
+    register: _results
+    args:
+      chdir: /home/bisora/scripts/schema
+    when: "'mbis_db' in group_names"
+    failed_when: "'ORA-65162' in _results.stdout"
+

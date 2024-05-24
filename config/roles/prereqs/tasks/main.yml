@@ -1,0 +1,8 @@
+- name: update any packages that are required to install the security patches
+  ansible.builtin.yum:
+    name: "{{ packages }}"
+    state: latest
+  vars:
+    packages:
+    - json-c
+    - nspr

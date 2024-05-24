@@ -1,0 +1,102 @@
+---
+
+- name: Install and Configure Telegraf
+  gather_facts: yes
+  become: yes
+  hosts: all
+  remote_user: ansible
+  serial: 1
+
+  tasks:  
+  - name: Install package and configure
+    block:
+      - name: Copy package to server
+        ansible.builtin.copy:
+          src: telegraf-1.25.0-1.x86_64.rpm
+          dest: /tmp
+          owner: ansible
+          group: ansible
+          mode: '0755'
+      
+      - name: install package
+        ansible.builtin.yum:
+          name: /tmp/telegraf-1.25.0-1.x86_64.rpm
+          disable_gpg_check: true
+          state: installed
+      
+      - name: Added monitoring server to host file
+        ansible.builtin.lineinfile:
+          path: /etc/hosts
+          line: xxx.xxx.xxx.xxx RBIMM-VPD-PNG13 RBIMM-VPD-PNG13.preprod.nafis.cicz.gov.au
+          insertafter: EOF 
+      
+      - name: Copy telegraf sudoers file
+        ansible.builtin.copy:
+          src: telegraf.sudo
+          dest: /etc/sudoers.d/telegraf
+          owner: root
+          group: root
+          mode: '0440'
+      
+      - name: Copy new telegraf.conf file
+        ansible.builtin.copy:
+          src: telegraf.conf
+          dest: /etc/telegraf/telegraf.conf
+          owner: telegraf
+          group: telegraf
+          mode: '0644'
+      
+      - name: Create a script directory
+        ansible.builtin.file:
+          path: /etc/telegraf/scripts
+          state: directory
+          owner: telegraf
+          group: telegraf
+          mode: '0755'
+                      
+      - name: Remove package from server
+        ansible.builtin.file:
+          path: /tmp/telegraf-1.25.0-1.x86_64.rpm
+          state: absent
+  
+  - name: Install password expirations files 
+    block:
+      - name: Copy password script
+        ansible.builtin.copy:
+          src: password_expiration.sh
+          dest: /etc/telegraf/scripts/password_expiration.sh
+          owner: telegraf
+          group: telegraf
+          mode: '0644'
+      
+      - name: Copy password conf
+        ansible.builtin.copy:
+          src: password_expiration.conf
+          dest: /etc/telegraf/telegraf.d/password_expiration.conf
+          owner: telegraf
+          group: telegraf
+          mode: '0644'
+
+  - name: Install Software Inventory files 
+    block: 
+      - name: Copy software inventory script
+        ansible.builtin.copy:
+          src: software_inventory.sh
+          dest: /etc/telegraf/scripts/software_inventory.sh
+          owner: telegraf
+          group: telegraf
+          mode: '0644'
+      
+      - name: Copy software inventory conf
+        ansible.builtin.copy:
+          src: software_inventory.conf
+          dest: /etc/telegraf/telegraf.d/software_inventory.conf
+          owner: telegraf
+          group: telegraf
+          mode: '0644'
+
+    always:
+    - name: Restart Telegraf service
+      ansible.builtin.service:
+        name: telegraf
+        state: restarted

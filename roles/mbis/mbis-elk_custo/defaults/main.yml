@@ -1,0 +1,5 @@
+---
+# defaults file for mbis-elk_custo
+
+mbis_package_names: bis-customization-elk
+

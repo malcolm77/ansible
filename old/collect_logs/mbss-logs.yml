@@ -1,0 +1,70 @@
+---
+- name: Collect Logs
+  gather_facts: yes
+  become: yes
+  hosts: SERVER40
+  vars:
+    base: "morphobss-"
+    # date: "2022-06"
+    date: "{{ansible_date_time.year }}-{{ ansible_date_time.month }}-{{ ansible_date_time.day }}"  
+    src_path: "/var/log/td-agent/mbss.default/"
+    dest_path: "/all_logs/"
+
+  tasks:
+    - name: Get ERROR logs
+      block:
+        - name: find recent ERROR logs
+          find:
+            path: "{{ src_path }}ERROR"
+            patterns: "{{ base }}ERROR.{{ date }}*"
+          register: logs
+        
+        - name: Copy recent ERROR logs
+          ansible.builtin.fetch:
+            src: "{{ item.path }}"
+            dest: "{{ dest_path }}" 
+          with_items: "{{ logs.files }}"
+
+    - name: Get INFO logs
+      block:
+        - name: find recent INFO log
+          find:
+            path: "{{ src_path }}INFO"
+            patterns: "{{ base }}INFO.{{ date }}*"
+          register: logs
+        
+        - name: Copy recent INFO logs
+          ansible.builtin.fetch:
+            src: "{{ item.path }}"
+            dest: "{{ dest_path }}" 
+          with_items: "{{ logs.files }}"
+
+    - name: Get DEBUG logs
+      block:
+        - name: find recent DEBUG log
+          find:
+            path: "{{ src_path }}DEBUG"
+            patterns: "{{ base }}DEBUG.{{ date }}*"
+          register: logs
+    
+        - name: Copy recent DEBUG logs
+          ansible.builtin.fetch:
+            src: "{{ item.path }}"
+            dest: "{{ dest_path }}" 
+          with_items: "{{ logs.files }}"
+
+    - name: Get WARN logs
+      block:
+        - name: find recent WARN log
+          find:
+            path: "{{ src_path }}WARN"
+            patterns: "{{ base }}WARN.{{ date }}*"
+          register: logs
+    
+        - name: Copy recent WARN logs
+          ansible.builtin.fetch:
+            src: "{{ item.path }}"
+            dest: "{{ dest_path }}" 
+          with_items: "{{ logs.files }}"
+
+

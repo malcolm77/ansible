@@ -1,0 +1,21 @@
+---
+# handlers file for mbis-oracle-install
+
+
+# - name: Import Custo handlers for uninstall
+#   include_tasks: mbis/mbis-oracle_custo-install/handlers/main.yml
+
+# - name: "Shutdown of MBIS services"
+#   become_user: bis
+#   become_method: sudo
+#   become_flags: -i
+#   ansible.builtin.shell: "/opt/bis/scripts/{{ item.shutdown_script }}"
+#   args:
+#     executable: /bin/bash
+#     chdir: "/opt/bis/scripts"
+#   when: ansible_facts.services[item.service_name] is defined and ansible_facts.services[item.service_name].state == 'running'
+#   with_items: "{{ mbis_shutdown_package_service_names }}"
+#   listen: "shutdown mbis"
+#   register: result
+#   changed_when: "'Stopping' in result.stdout"
+

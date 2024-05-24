@@ -1,0 +1,10 @@
+- name: Create a logical volume the size of all remaining space in the volume group
+  community.general.lvol:
+    vg: "{{ volume_group }}"
+    lv: "{{ logical_volume }}"
+    size: 100%FREE
+    
+- name: Create a ext4 filesystem on logical volume 
+  community.general.filesystem:
+    fstype: "{{ filesystem_type }}"
+    dev: "/dev/mapper/{{ volume_group }}-{{ logical_volume }}"

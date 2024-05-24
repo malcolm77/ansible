@@ -1,0 +1,669 @@
+---
+# tasks file for mbis-frontend-mbis
+
+
+  - name: Create directory structure C:\Tools
+    win_file:
+      path: C:\Tools
+      state: directory
+
+  - name: "configure hosts file with bisapp.mbis-dev.idemia.com "
+    vars:
+      mbis_frontend_backend_hostnames:
+      - bisapp
+      - ptkads
+      - bisartemis.mbis-dev.idemia.com
+      - elasticsearch.mbis-dev.idemia.com
+      - logstash.mbis-dev.idemia.com
+      - kibana.mbis-dev.idemia.com
+      - elasticsearch
+      - kibana
+      - logstash
+    win_hosts:
+      state: present
+      canonical_name: "bisapp.mbis-dev.idemia.com"
+      ip_address: "{{ host_backendip }}" # configured in inventory
+      action: add
+      aliases: "{{ mbis_frontend_backend_hostnames | default ('') }}"
+
+  - name: "configure hosts file with keycloak.mbis-dev.idemia.com"
+    vars:
+      mbis_frontend_backend_hostnames:
+    win_hosts:
+      state: present
+      canonical_name: "keycloak.mbis-dev.idemia.com"
+      ip_address: "{{ host_keycloakip }}" # configured in inventory
+      action: add
+      aliases: "{{ mbis_frontend_backend_hostnames | default ('') }}"
+
+  - name: "configure hosts file with ADFS/BISPDC"  # Name TBC
+    vars:
+      mbis_frontend_backend_hostnames:
+        - BISPDC
+    win_hosts:
+      state: present
+      canonical_name: "sbids-psi-uns01.mbis-dev.idemia.com" # these are the current INTEGRATION names
+      ip_address: "{{ host_adfsbisdcip }}"
+      action: add
+      aliases: "{{ mbis_frontend_backend_hostnames | default ('') }}"
+
+  - name: "configure hosts file with ADFS/mbis-dev/mbis-dev.idemia.com " # Name TBC
+    vars:
+      mbis_frontend_backend_hostnames:
+        - mbis-dev.idemia.com
+    win_hosts:
+      state: present
+      canonical_name: "sbids-psi-uns03.mbis-dev.idemia.com"  # these are the current INTEGRATION names
+      ip_address: "{{ host_adfsmbisdevip }}"
+      action: add
+      aliases: "{{ mbis_frontend_backend_hostnames | default ('') }}"
+
+  - name: "Allow users to modify the hosts files enabling them to switch between environments"
+    win_acl:
+      user: Users
+      path: C:\Windows\System32\drivers\etc\hosts
+      type: allow
+      rights: Read,Write,Modify
+
+  - name: "Ensure security folder exists [{{ mbis_frontend_security_directory }}]"
+    win_file:
+      state: directory
+      path: "{{ mbis_frontend_security_directory }}"
+
+  - name: Download & install MBIS Frontend root certificates
+    vars:
+      mbis_frontend_root_certificates:
+        name: "gdcacert.pem"
+
+    block:
+    - name: "Download Frontend root certificates [{{  mbis_frontend_root_certificates.name }}]"
+      win_get_url:
+        url: "{{ frontendpackage_mbiscommonbaseurl }}{{  mbis_frontend_root_certificates.name }}"
+        dest: "{{ mbis_frontend_security_directory }}{{  mbis_frontend_root_certificates.name }}"
+        force: no
+
+    - name: "Import MBIS Frontend root certificates"
+      win_certificate_store:
+        path: "{{ mbis_frontend_security_directory }}{{ mbis_frontend_root_certificates.name }}"
+        state: present
+        store_location: LocalMachine
+        store_name: Root
+        #file_type: pem # TBC
+
+  - name: Download & install MBIS Frontend Client certificate
+    vars:
+
+    block:
+    - name: "Download Frontend Client certificate [{{ mbis_frontend_client_certificate.name }}]"
+      win_get_url:
+        url: "{{ frontendpackage_mbiscommonbaseurl }}{{ mbis_frontend_client_certificate.name }}"
+        dest: "{{ mbis_frontend_security_directory }}{{ mbis_frontend_client_certificate.name }}"
+        force: no
+
+    - name: "Import Frontend Client certificate {{ mbis_frontend_client_certificate.name }}"
+      win_certificate_store:
+        path: "{{ mbis_frontend_security_directory }}\\{{ mbis_frontend_client_certificate.name }}"
+        state: present
+        password: "{{ mbis_frontend_client_certificate.password }}"
+        file_type: "{{ mbis_frontend_client_certificate.type | default('pkcs12') }}"
+        key_storage: machine
+        store_location: LocalMachine
+        store_name: Root
+      # become: true
+      # become_method: runas
+      # become_user: "{{ mbis_frontend_user }}"
+
+  # Old version must be manually removed before installing.
+  - name: Install MBIS Frontend packages
+    vars:
+      # Remember to update service to match what is installed
+      frontend_packages:
+        - { package_name: bis-common-lib-5.12.1-x64.msi, package_productid: "{D56049BD-BE9E-4793-9963-4C3684D8D910}" }
+        - { package_name: bis-core-5.12.1-x64-GENERIC_WITH_MTK.msi, package_productid: "{CCD624D0-86D7-49CB-AE00-D80186D896B9}" }
+        - { package_name: bis-dsm-5.12.1-x64.msi, package_productid: "{0BDEC06C-69B6-4037-AA70-6CFEC2213984}" }
+        - { package_name: bis-cps-5.12.1-x64.msi, package_productid: "{353EDA70-794B-441D-93B4-9B20CFB7518B}" }
+        - { package_name: bis-des-5.12.1-x64.msi, package_productid: "{C0886925-6035-430B-ACD4-FB644C8F697D}" }
+    win_package:
+      path: "{{ frontendpackage_mbisbaseurl }}{{ item.package_name }}"
+      state: present
+      # log_path: "c:\\logs\\package_name{{ item.package_name }}.log"
+      # product_id: "{{ item.package_productid }}"
+    with_items: "{{ frontend_packages }}"
+
+
+  - name: Install frontend custo packages ProgramData
+    vars:
+      package_name:
+        - bis-customisation-frontend-addon-mbis.zip
+        - bis-customisation-frontend-cps-mbis.zip
+        - bis-customisation-frontend-des-mbis.zip
+        # des-lib-mbis is installed in a later step
+      package_directory: "C:\\ansible_tmp"
+    block:
+    - name: "Create directory structure {{ package_directory }}"
+      win_file:
+        path: "{{ package_directory }}"
+        state: directory
+
+    - name: "Download package [{{ package_name }}]"
+      win_get_url:
+        url: "{{ frontendpackage_baseurl_Custo }}/{{ item }}"
+        dest: "{{ package_directory }}/{{ item }}"
+        force: no
+      with_items: "{{ package_name }}"
+
+    - name: Uncompress Zip files for frontend custo packages
+      # This module is not really idempotent, it will extract the archive every time, and report a change.
+      # ansible.windows.win_command: Powershell Expand-Archive -Path "{{ package_directory }}\\{{ package_name }}" -DestinationPath "{{ package_directory }}\\{{ package_name | splitext | first }}"
+
+      win_unzip:
+        src: "{{ package_directory }}\\{{ item }}"
+        dest: "{{ package_directory }}\\{{ item | splitext | first }}"
+        creates: "{{ package_directory }}\\{{ item | splitext | first }}"
+      with_items: "{{ package_name }}"
+
+    - name: "Copy frontend custo packages into C:\\ProgramData\\MorphoTrak\\Bis"
+      win_copy:
+        src: "{{ package_directory }}\\{{ item | splitext | first }}\\"
+        dest: C:\ProgramData\MorphoTrak\Bis
+        remote_src: yes
+      with_items: "{{ package_name }}"
+
+
+  # - name: Install frontend custo packages ProgramFiles
+  #   vars:
+  #     package_name:
+  #       - bis-customisation-frontend-des-lib-mbis_5.11.0_AU-CJ-ACIC_4.1.0-1367.noarch.zip
+  #     package_directory: "C:\\ansible_tmp"
+  #   block:
+  #   - name: Create directory structure
+  #     win_file:
+  #       path: "{{ package_directory }}"
+  #       state: directory
+
+  #   - name: "Download package [{{ package_name }}]"
+  #     win_get_url:
+  #       url: "{{ frontendpackage_baseurl_Custo }}/{{ item }}"
+  #       dest: "{{ package_directory }}/{{ item }}"
+  #       force: no
+  #     with_items: "{{ package_name }}"
+
+  #   - name: Uncompress Zip files for frontend custo packages
+  #     # This module is not really idempotent, it will extract the archive every time, and report a change.
+  #     win_unzip:
+  #       src: "{{ package_directory }}\\{{ item }}"
+  #       dest: "{{ package_directory }}\\{{ item | splitext | first }}"
+  #       creates: "{{ package_directory }}\\{{ item | splitext | first }}"
+  #     with_items: "{{ package_name }}"
+
+  #   - name: Copy frontend custo packages into C:\Program Files\MorphoTrak\Bis\
+  #     win_copy:
+  #       src: "{{ package_directory }}\\{{ item | splitext | first }}\\"
+  #       dest: C:\Program Files\MorphoTrak\Bis
+  #       remote_src: yes
+  #     with_items: "{{ package_name }}"
+
+  - name: "Allow users to modify es-wrapper.conf to update username"
+    win_acl:
+      user: Users
+      path: C:\ProgramData\MorphoTrak\Bis\des\etc\lataut\des-wrapper.conf
+      type: allow
+      rights: Read,Write,Modify
+
+  - name: Add missing library file to des-lib-mbis
+    win_get_url:
+      url: "{{ frontendpackage_mbiscommonbaseurl }}httpmime-4.5.3.jar"
+      dest: C:\Program Files\MorphoTrak\Bis\des\lib\
+
+  # replaced with samba shares instead of winscp
+  # - name: Install WinSCP
+  #   vars:
+  #     frontend_packages:
+  #       - { package_name: WinSCP-5.19.6-Setup.exe, product_id: 'winscp3_is1' }
+  #   win_package:
+  #     path: "{{ package_baseurl }}{{ item.package_name }}"
+  #     product_id: "{{ item.product_id }}"
+  #     state: present
+  #     arguments:
+  #       - /MERGETASKS=!desktopicon
+  #       - /SILENT
+  #       - /ALLUSERS
+  #       - /NORESTART
+  #   with_items: "{{ frontend_packages }}"
+
+  - name: Install Notpad++
+    vars:
+      frontend_packages:
+        - { package_name: npp.8.4.2.Installer.x64.exe, product_id: 'notepad++' }
+    win_package:
+      path: "{{ frontendpackage_mbiscommonbaseurl }}{{ item.package_name }}"
+      product_id: "{{ item.product_id }}"
+      state: present
+      arguments:
+        - /S
+    with_items: "{{ frontend_packages }}"
+
+  # https://npp-user-manual.org/docs/other-resources/#missing-edit-with-notepad-action
+  - name: HKEY_CLASSES_ROOT\*\shell\Notepad+
+    win_regedit:
+      path: HKCR:\*\shell\Notepad++
+      data: 'Edit With Notepad++'
+
+  - name: HKEY_CLASSES_ROOT\*\shell\Notepad++\command
+    win_regedit:
+      path: HKCR:\*\shell\Notepad++\command
+      data: '"C:\Program Files\Notepad++\notepad++.exe" "%1"'
+
+
+
+  # extract affinity photo using Affinity-Photo-x.x.x.exe /defaults, then slient install using msi
+  # then install using win_package and arguments: - /passive
+  - name: Install Affinity-Photo
+    vars:
+      frontend_packages:
+        - { package_name: Affinity1_10_4.msi}
+    win_package:
+      path: "{{ frontendpackage_mbiscommonbaseurl }}{{ item.package_name }}"
+      state: present
+      arguments:
+        - /passive
+    with_items: "{{ frontend_packages }}"
+
+  - name: Install Irfanview
+    vars:
+      frontend_packages:
+        - { package_name: iview460_x64_setup.exe, product_id: 'IrfanView64' }
+    win_package:
+      path: "{{ frontendpackage_mbiscommonbaseurl }}{{ item.package_name }}"
+      product_id: "{{ item.product_id }}"
+      state: present
+      arguments:
+        - /silent
+        - /group=1
+        - /desktop=1
+        - /allusers=1
+    with_items: "{{ frontend_packages }}"
+
+
+  - name: Configure security store and SSL_PROPERTY_FILE
+    vars:
+      mbis_frontend_security_stores:
+        keystore: client.mbis.keystore
+        truststore: client.mbisdev.truststore
+        ssl_properties: client-ssl.properties
+    block:
+    - name: Get MBIS Frontend security store, Copy security stores into MorphoTrak app
+      win_get_url:
+        url: "{{ frontendpackage_mbiscommonbaseurl}}/{{ item }}"
+        dest: "C:\\ProgramData\\MorphoTrak\\Bis\\etc\\{{ item }}"
+        force: no
+      with_items:
+        - "{{ mbis_frontend_security_stores.keystore }}"
+        - "{{ mbis_frontend_security_stores.truststore }}"
+        - "{{ mbis_frontend_security_stores.ssl_properties }}"
+      notify:
+        - "restart DSM"
+
+    - name: Set environment variable SSL_PROPERTY_FILE
+      win_environment:
+        state: present
+        name: SSL_PROPERTY_FILE
+        value: "C:\\ProgramData\\MorphoTrak\\Bis\\etc\\{{ mbis_frontend_security_stores.ssl_properties }}"
+        level: machine
+      notify:
+        - "restart DSM"
+
+
+  - name: Restart DES-lataut, then register if missing
+    block:
+    - name: "Attempt to restart DES-lataut"
+      vars:
+        mbis_frontend_service_names:
+          - "DES-lataut" # MorphoTrak BIS DES LatAut
+      win_service:
+        name: "{{ item }}"
+        state: started
+      check_mode: yes
+      with_items: "{{ mbis_frontend_service_names }}"
+
+    rescue:
+    - name: DES-lataut missing - Install DES Service
+      win_command: C:\ProgramData\MorphoTrak\Bis\des\scripts\DesRegister_lataut.bat
+
+
+
+
+  - name: "restart frontend mbis_frontend_service_names"
+    vars:
+      mbis_frontend_service_names:
+        - DSM # MorphoTrak BIS DSM (DSM)
+        # - "CVA" # MorphoTrak BIS CentralViewer Agent (CVA)
+        - "MBISCPS" # MorphoTrak BIS CPS
+    win_service:
+      name: "{{ item }}"
+      state: started
+    with_items: "{{ mbis_frontend_service_names }}"
+
+
+  - name: Create C:\tools\MBIS\Logs directory structure
+    win_file:
+      path: C:\tools\MBIS\Logs
+      state: directory
+
+  - name: Set environment variable BIS_FE_LOG_HOME
+    win_environment:
+      state: present
+      name: BIS_FE_LOG_HOME
+      value: "C:\\tools\\MBIS\\Logs"
+      level: machine
+
+  - name: Verify expected environment variables.
+    win_environment:
+      state: present
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      level: machine
+    check_mode: true
+    register: _results
+    failed_when: _results.changed == True
+    with_items:
+        - { name: BIS_APP_HOME, value: "C:\\Program Files\\MorphoTrak\\Bis" }
+        - { name: BIS_DATA_HOME, value: "C:\\ProgramData\\Morphotrak\\Bis" }
+        - { name: BIS_ETC_HOME, value: "C:\\ProgramData\\Morphotrak\\Bis\\etc" }
+        - { name: BIS_LOG_HOME, value: "C:\\ProgramData\\Morphotrak\\Bis\\log" }
+
+#Add environment variables and path variables
+# - name: Retrieve the user_profile for MBISApps.jar
+#   win_shell: echo %USERPROFILE%
+#   args:
+#     executable: "C:\\Windows\\System32\\cmd.exe"
+#   register: user_profile
+#   changed_when: false
+
+# !!! What should BIS_APP_DIR be set to !!!
+
+  # - name: Set environment variable BIS_APP_DIR (for current user)
+  #   win_environment:
+  #     state: present
+  #     name: BIS_APP_DIR
+  #     # value: "{{ user_profile.stdout_lines[0] }}\\MorphoTrak"
+  #     level: user
+
+  - name: Set environment variable BIS_APP_DIR (for all users)
+    win_environment:
+      state: present
+      name: BIS_APP_DIR
+      value: c:\tools\MBIS
+      level: machine
+
+
+  - name: Set environment variable BIS_BASE_URL (for all users)
+    win_environment:
+      state: present
+      name: BIS_BASE_URL
+      value: "{{ mbis_frontend_backend_baseurl }}"
+      level: machine
+
+
+
+####
+## WARNING - To avoid Google chrome prompt on certificate
+## TBC which certificate to use
+####
+  # - name: Google Chrome automatic client certificate selection
+  #   vars:
+  #     mbis_frontend_google_chrome_registry_certificate_pattern: '{\"pattern\":\"{{ mbis_frontend_backend_baseurl }}/*\",\"filter\":{\"ISSUER\":{\"CN\":\"MBIS Root CA\", \"L\": \"Anaheim\", \"O\": \"MorphoTrak\", \"OU\": \"DPI\"}, \"SUBJECT\":{\"CN\":\"client\", \"L\": \"Anaheim\", \"O\": \"MorphoTrak\", \"OU\": \"DPI\"}}}'
+  #   win_regedit:
+  #     path: HKLM:\Software\Policies\Google\Chrome\AutoSelectCertificateForUrls
+  #     name: 1
+  #     data: "{{ mbis_frontend_google_chrome_registry_certificate_pattern }}"
+
+  # - name: Google Chrome AuthServerAllowlist
+  #   vars:
+  #     mbis_frontend_google_chrome_AuthServerAllowlist: "*.mbis-dev.idemia.com"
+  #   win_regedit:
+  #     path: HKLM:\Software\Policies\Google\Chrome\AuthServerAllowlist
+  #     name: 1
+  #     data: "{{ mbis_frontend_google_chrome_AuthServerAllowlist }}"
+
+
+
+  - name: "AppBar download task as Windows local user"
+
+  # !!!  need to confirm frontend user  !!!!!
+    # become: true
+    # become_method: runas
+    # become_user: "{{ mbis_frontend_user }}"
+    block:
+      # - name: "Create a MorphoTrak directory within user profile space"
+      #   win_file:
+      #     path: "%USERPROFILE%/MorphoTrak"
+      #     state: directory
+
+      # unable to verify
+      # - name: "Download MBISApps.jar - WARNING: Your backend AppServer must be up and running at this point"
+      #   win_get_url:
+      #     url: "{{ mbis_frontend_backend_baseurl }}/AppBar/MBISApps.jar"
+      #     dest: 'C:\tools\MBISApps.jar'
+      #     client_cert: "{{ mbis_frontend_security_directory }}\\{{ mbis_frontend_client_certificate.name }}"
+      #     client_cert_password: "{{ mbis_frontend_client_certificate.password }}"
+      #     timeout: 300
+      #     validate_certs: no
+      #   ignore_errors: yes
+
+      - name: "Download MBISApps.jar from Repo Server"
+        win_get_url:
+          url: "{{ frontendpackage_mbisbaseurl }}/MBISApps.jar"
+          dest: "C:\\tools\\MBISApps.jar"
+          force: no
+
+      - name: Create AppBar shortcut
+        win_shortcut:
+          src: 'C:\tools\MBISApps.jar'
+          dest: '%Public%\Desktop\domain.lnk'
+          icon: 'C:\tools\NextGenIcon.ico'
+
+
+##############################
+#  Additional configuration  #
+##############################
+
+
+  # - name: Create mapped drive with credentials that do not persist on the next logon
+  #   community.windows.win_mapped_drive:
+  #     letter: M
+  #     path: \\SERVER\C$
+  #     state: present
+  #     username: '{{ ansible_user }}'
+  #     password: '{{ ansible_password }}'
+
+
+  - name:  Copy wallpapers to C:\tools\ (results in C:\tools\Wallpaper)
+    win_copy:
+      src: ./files/frontend/Wallpaper
+      dest: C:\tools\
+      force: yes
+
+  - name: Remove a default wallpaper, before copying the new default
+    win_file:
+      path: C:\Windows\Web\Wallpaper\Windows\img0.jpg
+      state: absent
+
+  - name:  Copy the Default wallpaper to C:\Windows (results in C:\Windows\Web\Wallpaper\Windows\img0.jpg)
+    win_copy:
+      src: "{{ mbis_frontend_wallpaper }}"
+      dest: C:\Windows\Web\Wallpaper\Windows\img0.jpg
+      force: yes
+
+  - name:  Copy folder to C:\tools\ (results in C:\tools\scripts)
+    win_copy:
+      src: ./files/frontend/Scripts
+      dest: C:\tools\
+      force: yes
+
+  - name:  Copy icon to C:\tools\ (results in C:\tools\scripts)
+    win_copy:
+      src: ./files/frontend/NextGenIcon.ico
+      dest: C:\tools\NextGenIcon.ico
+      force: yes
+
+  - name:  Copy Bginfo to C:\Program Files
+    win_copy:
+      src: ./files/frontend/Bginfo
+      dest: C:\Program Files
+      force: yes
+
+
+
+  - name: Create CopyLogs scheduled task
+    win_scheduled_task:
+      name: CopyLogs
+      description: Copy account logs to shared drive.
+      actions:
+      - path: C:\tools\Scripts\CopyLogs.vbs
+      triggers:
+      - type: daily
+        start_boundary: '2022-06-07T10:22:32'
+        repetition:
+          interval: PT1M
+          duration: PT24H # repeat indefinatly
+          stop_at_duration_end: no
+      group: Users
+      run_level: highest
+      state: present
+      enabled: yes
+
+  - name: Create deslatautConfig scheduled task
+    win_scheduled_task:
+      name: deslatautConfig
+      description: Edit des-wrapper.conf to update with current user logged in, and then restart service to reflect these updates.
+      actions:
+      - path: C:\tools\Scripts\DesLatautScript.vbs
+      triggers:
+      - type: logon
+      username: SYSTEM
+      run_level: highest
+      state: present
+      enabled: yes
+
+  - name: Create Bginfo scheduled task
+    win_scheduled_task:
+      name: Bginfo
+      description: Run Bginfo.bat when user logs on
+      actions:
+      - path: C:\Program Files\Bginfo\Bginfo.bat
+      triggers:
+      - type: logon
+      group: Users
+      run_level: highest
+      state: present
+      enabled: yes
+
+  - name: Ensure Latent Automation folder exists [C:\PtkOSM\lataut]
+    win_file:
+      state: directory
+      path: C:\PtkOSM\lataut
+
+  - name: prepared images folder exists [C:\PtkOSM\lataut\prepared]
+    win_file:
+      state: directory
+      path: C:\PtkOSM\lataut\prepared
+
+  - name: unprepared images folder exists [C:\PtkOSM\lataut\unprepared]
+    win_file:
+      state: directory
+      path: C:\PtkOSM\lataut\unprepared
+
+  - name: Create Latent Automation(Lataut) shortcut
+    win_shortcut:
+      src: C:\PtkOSM\Lataut
+      dest: '%Public%\Desktop\Latent Automation.lnk'
+
+  - name: Install IdemiaNistViewer_Full
+    vars:
+      package_name: IdemiaNistViewer_ACIC_22.0608.exe
+      shortcutname: IdemiaNistViewer
+      propertyname: IdemiaNistViewer.properties
+    block:
+    - name: "Download package [{{ package_name }}]"
+      win_get_url:
+        url: "{{ frontendpackage_mbiscommonbaseurl }}/{{ package_name }}"
+        dest: "C:\\tools\\{{ package_name }}"
+        force: no
+
+    - name: "Download package [{{ propertyname }}]"
+      win_get_url:
+        url: "{{ frontendpackage_mbiscommonbaseurl }}/{{ propertyname }}"
+        dest: "C:\\tools\\{{ propertyname }}"
+        force: no
+
+    - name: Create IdemiaNistViewer_Full shortcut
+      win_shortcut:
+        src:  "C:\\tools\\{{ package_name }}"
+        dest: "%Public%\\Desktop\\{{ shortcutname }}.lnk"
+        directory: C:\tools
+        icon:  "C:\\tools\\{{ package_name }},0"
+
+  - name: Ensure Images folder exists [C:\CPSOutput]
+    win_file:
+      state: directory
+      path: C:\CPSOutput
+
+
+  - name: Create Images shortcut
+    win_shortcut:
+      src: C:\CPSOutput
+      dest: '%Public%\Desktop\Images.lnk'
+
+
+
+
+  - name: Create IrfanView 64 shortcut
+    win_shortcut:
+      src: C:\Program Files\IrfanView\i_view64.exe
+      dest: '%Public%\Desktop\IrfanView 64.lnk'
+      icon: C:\Program Files\IrfanView\i_view64.exe,0
+
+  # - name: Create NIST Batch Export shortcut
+  #   community.windows.win_shortcut:
+  #     src: sftp://export:Secret%2B%2B%2B%2B%2B%2B%2B%2B%2B@xxx.xxx.xxx.xxx/ActiveFiles/transfer/pub/des/output/export/
+  #     dest: '%Public%\Desktop\NIST Batch Export.url'
+  #     icon: C:\Program Files (x86)\WinSCP\WinSCP.exe,0
+
+  - name: Create Kibana reports shortcut
+    win_shortcut:
+      src: https://kibana.mbis-dev.idemia.com:5601/
+      dest: '%Public%\Desktop\Reports.lnk'
+      icon: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe,0
+
+
+
+
+  # - name: Create a file from a Jinja2 template
+  #   ansible.windows.win_template:
+  #     src: ./templates/SetWallpaper.ps1.j2
+  #     dest: C:\tools\Scripts\SetWallpaper.ps1
+
+  # - name: Create SetWallpaper scheadule task
+  #   community.windows.win_scheduled_task:
+  #     name: SetWallpaper
+  #     description: Update Wallpaper with environment
+  #     actions:
+  #     - path: C:\tools\Scripts\SetWallpaper.vbs
+  #     triggers:
+  #     - type: logon
+  #     - type: session_state_change
+  #     group: Users
+  #     run_level: highest
+  #     state: present
+  #     enabled: yes
+
+  - name: Remove Ansible Temp folder
+    win_file:
+      path: C:\ansible_tmp
+      state: absent
+
+  - name: Update Last Updated File
+    ansible.builtin.copy:
+      content: "{{ ansible_date_time.year }}-{{ ansible_date_time.month }}-{{ ansible_date_time.day }} {{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}:{{ ansible_date_time.second }} AEST"
+      dest: C:\Windows\System32\drivers\etc\last_updated

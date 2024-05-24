@@ -1,0 +1,5 @@
+[SERVER03]
+name=v - RHEL 6.10 Patching
+baseurl=http://xxx.xxx.xxx.xxx/repo/rhel-6-server-rpms/
+gpgcheck=0
+enabled=1

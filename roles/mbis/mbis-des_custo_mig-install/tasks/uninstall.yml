@@ -1,0 +1,16 @@
+
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: "remove {{ mbis_package_names }}"
+  ansible.builtin.shell: rpm --erase --justdb --allmatches -v "{{ mbis_package_names }}"
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: _result
+  when: "mbis_package_names in ansible_facts.packages"
+  changed_when: "'Preparing packages...' in _result.stdout"
+
+- ansible.builtin.debug:
+    var: _result.stdout_lines

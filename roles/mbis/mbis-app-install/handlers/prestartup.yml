@@ -1,0 +1,51 @@
+
+---
+
+- name: "Load MBIS configuration (ConfigLoader.sh)"
+  ansible.builtin.command: /opt/bis/scripts/ConfigLoader.sh
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  register: result
+  register: _results
+  failed_when: "'New BackingStoreMonitor thread created' not in _results.stdout"
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: _results.stdout_lines
+
+- name: "Load product MBIS Jsc java files "
+  ansible.builtin.command: /opt/bis/scripts/JscLoader
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  register: result
+  register: _results
+  failed_when: "'Completed loading script list file' not in _results.stdout"
+
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: _result.stdout_lines
+
+
+- name: "Load product MBIS wkf java files "
+  ansible.builtin.command: /opt/bis/scripts/JwfLoader
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  register: result
+  register: _results
+  failed_when: "'Validation results: no errors.' not in _results.stdout"
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: _result.stdout_lines
+
+
+
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: _result.stdout_lines
+

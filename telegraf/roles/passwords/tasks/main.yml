@@ -1,0 +1,21 @@
+- name: Copy password script
+  ansible.builtin.copy:
+    src: password_expiration.sh
+    dest: /usr/local/bin/telegraf/probes/password_expiration.sh
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+
+- name: Copy password conf
+  ansible.builtin.copy:
+    src: password_expiration.conf
+    dest: /etc/telegraf/telegraf.d/password_expiration.conf
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+
+- name: Restart Telegraf service
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted
+

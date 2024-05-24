@@ -1,0 +1,11 @@
+---
+
+
+- name: Start Fes, monitor logs for " ERROR " for 10 seconds
+  ansible.builtin.command: /opt/bis/scripts/FesStartup && timeout 10 tail -f /opt/bis/log/fes.log
+  become_user: bis
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  register: _results
+  failed_when: "'Running with PID' not in _results.stdout or ' ERROR ' in _results.stdout"

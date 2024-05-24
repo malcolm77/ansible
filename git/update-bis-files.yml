@@ -1,0 +1,24 @@
+---
+- name: Test to check a file out of git
+  gather_facts: false
+  hosts: SERVER04
+  become: yes
+  become_user: root
+#  vars_files:
+#    ~/svc_ansible.yml
+
+  tasks:
+  - name: Git pull
+    ansible.builtin.git:
+      repo: "http://svc_ansible:Enlisted-Oyster2-Unrelated@pbimm-vpd-png03:3000/Idemia/WorkflowData.git"
+      dest: /opt/bis/etc/bis
+      force: yes
+      update: yes
+
+  - name: Make sure permissions are correct
+    ansible.builtin.file:
+      path: /opt/bis/etc/bis
+      owner: bis
+      group: bis
+      recurse: yes
+

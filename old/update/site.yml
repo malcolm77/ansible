@@ -1,0 +1,28 @@
+---
+###
+
+- name: Update server with latest security patches
+  hosts: all
+  gather_facts: yes
+  become: true
+  serial: 2
+
+  tasks:
+    - name: Install latest security patches
+      ansible.builtin.yum:
+        name: "*"
+        state: latest
+        exclude: net-snmp*
+        disable_gpg_check: no
+        security: yes
+
+    - name: Check if restart is required
+      shell: needs-restarting -r
+      register: result
+      failed_when: false
+      changed_when: result.rc == 0
+
+    - name: Reboot server and wait up to 5 minute for it to return
+      when: result.rc == 1
+      reboot:
+        reboot_timeout: 300

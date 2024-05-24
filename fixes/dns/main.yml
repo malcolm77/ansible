@@ -1,0 +1,24 @@
+# Fix the DNS settings of an interface
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: Fix the DNS server list
+    community.general.nmcli:
+      conn_name: ens192
+      type: ethernet
+      dns4:
+      - xxx.xxx.xxx.xxx
+      - xxx.xxx.xxx.xxx
+      gw4: xxx.xxx.xxx.xxx
+      state: present
+
+  - name: Fix the DNS search domain
+    community.general.nmcli:
+      conn_name: ens192
+      type: ethernet
+      gw4: xxx.xxx.xxx.xxx
+      dns4_search: "nafix.cicz.gov.au"
+      state: present

@@ -1,0 +1,13 @@
+# A playbook to start the alerting service in PDC and SDC
+---
+- hosts: SERVER04, SERVER04
+  become: yes
+  gather_facts: no
+  remote_user: svc_ansible
+
+  tasks:
+  - name: Start AlertManager Service in PDC and SDC
+    ansible.builtin.service:
+      name: alertmanager
+      state: started
+

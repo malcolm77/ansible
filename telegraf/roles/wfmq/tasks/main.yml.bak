@@ -1,0 +1,43 @@
+- name: Copy bash scripts
+  ansible.builtin.copy:
+    src: "{{ bash-scripts }}"
+    dest: /usr/local/bin/telegraf/probes/
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+  vars:
+    bash-scripts:
+      - jms_wms_store_queuestatuscount.sh
+      - wfm_workflow_queuecount.sh
+      - wfm_workflow_statecount.sh
+
+- name: Copy SQLh scripts
+  ansible.builtin.copy:
+    src: "{{ sql-scripts }}"
+    dest: /usr/local/bin/telegraf/probes/
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+  vars:
+    sql-scripts:
+      - jms_wms_store_queuestatuscount.sql
+      - wfm_workflow_queuecount.sql
+      - wfm_workflow_statecount.sql
+
+- name: Copy conf Scripts
+  ansible.builtin.copy:
+    src: "{{ conf-files }}"
+    dest: /etc/telegraf/telegraf.d/
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+  vars:
+    conf-files:
+      - jms_wms_store_queuestatuscount.conf
+      - wfm_workflow_queuecount.conf
+      - wfm_workflow_statecount.conf
+
+- name: Restart Telegraf service
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted

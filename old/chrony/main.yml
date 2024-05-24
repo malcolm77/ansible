@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Copy chronyfile 
+    copy:
+      force: yes
+      src: /etc/chrony.conf
+      dest: /etc/
+      owner: root
+      group: root
+      mode: '0644'
+  - name: Start the named service
+    service:
+      name: chronyd 
+      state: restarted

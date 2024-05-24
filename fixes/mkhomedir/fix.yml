@@ -1,0 +1,9 @@
+# a 'test' playbook for testing connection and credentials
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  tasks:
+  - name: enable make home dir
+    ansible.builtin.command: /usr/sbin/authconfig --enablemkhomedir --update
+

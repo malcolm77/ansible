@@ -1,0 +1,10 @@
+---
+# defaults file for mbis-sso-install
+
+mbis_package_names:
+  - bis-keycloak-server
+
+
+mbis_shutdown_package_service_names:
+  - { package_name: "bis-keycloak-server", service_name: "keycloak.service", shutdown_script: "KeycloakShutdown"}
+

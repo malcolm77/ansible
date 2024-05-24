@@ -1,0 +1,36 @@
+---
+
+
+- hosts: mbis
+  gather_facts: no
+  become: no
+  tasks:
+
+  - name: Export all assets
+    awx.awx.export:
+      all: True
+    delegate_to: localhost
+    become: no
+
+
+  # - name: Export all assets
+  #   tower_receive:
+  #     all: True
+  #   delegate_to: localhost
+  #   become: no
+
+  vars:
+   - ansible_python_interpreter: /usr/bin/python2
+
+  collections:
+   - awx.awx
+
+  # - name: Export all assets
+  #   export:
+  #     all: True
+  #   delegate_to: localhost
+
+  # - name: Export all tower assets
+  #   tower_receive:
+  #     all: True
+  #     tower_config_file: "~/tower_cli.cfg"

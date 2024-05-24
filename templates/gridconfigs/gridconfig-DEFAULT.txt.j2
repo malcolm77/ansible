@@ -1,0 +1,16 @@
+{{ hostname | default(inventory_hostname_short) }};BR1;BR;-b;stop
+{% if mbss_teragrid_partition_count.persons|default(1200) > 0 %}
+{{ hostname | default(inventory_hostname_short) }};DCP1;DC;{{ mbss_gridconfig.dcp.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.dcp.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-O -Dteragrid.dc.partitions=0-{{ mbss_teragrid_partition_count.persons-1 }} -O -Dteragrid.dc.dbdir={{ mbss_data_root_directory }}/mbss/persons -O -Dteragrid.dc.datatype=persons -b;stop
+{% endif %}
+{% if mbss_teragrid_partition_count.latents|default(1200) > 0 %}
+{{ hostname | default(inventory_hostname_short) }};DCL1;DC;{{ mbss_gridconfig.dcl.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.dcl.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-O -Dteragrid.dc.partitions=0-{{ mbss_teragrid_partition_count.latents-1 }} -O -Dteragrid.dc.dbdir={{ mbss_data_root_directory }}/mbss/latents -O -Dteragrid.dc.datatype=latents -b;stop
+{% endif %}
+{{ hostname | default(inventory_hostname_short) }};ST1;ST;-J 20000 -b;stop
+{{ hostname | default(inventory_hostname_short) }};IC1;IC;{{ mbss_gridconfig.ic.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.ic.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-b;stop
+{{ hostname | default(inventory_hostname_short) }};CU1;CU;{{ mbss_gridconfig.cu.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.cu.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-b;stop
+{{ hostname | default(inventory_hostname_short) }};CC1;CC;{{ mbss_gridconfig.cc.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.cc.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-b;stop
+{{ hostname | default(inventory_hostname_short) }};MU1;MU;{{ mbss_gridconfig.mu.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.mu.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-b;stop
+{{ hostname | default(inventory_hostname_short) }};MC1;MC;{{ mbss_gridconfig.mc.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.mc.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-b;stop
+{% if mbss_teragrid_partition_count.latents|default(1200) > 0 %}
+{{ hostname | default(inventory_hostname_short) }};LU1;LU;{{ mbss_gridconfig.lu.threads|default('')|regex_replace('^(.+)$', '-c \\1 ') }}{{ mbss_gridconfig.lu.memory|default('')|regex_replace('^(.+)$', '-m \\1 ') }}-b;stop
+{% endif %}

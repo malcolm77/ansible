@@ -1,0 +1,214 @@
+<teragrid>
+  <partitionCount>
+    <!-- 
+        For the small systems (a few machines), the number of partitions can be reduced to 120.
+        See the tuning guide for more information.
+        !!! to change the number of partitions, the system must be totally stopped and
+        !!! - either the database must be empty
+        !!! - or run first terarepartitionning.sh then terasync.sh (check the admin guide for details)
+    -->
+    <persons>1200</persons>
+    <latents>1200</latents>
+  </partitionCount>
+  <psetCount>    
+    <!-- 
+        The number of partition sets for persons is given by the configurator.
+        Once you have changed this value, you need to run teraconf.sh with option set to take the new value into account.
+        This can be done while the system is running.
+    -->
+    <persons>12</persons>
+  </psetCount>
+  <broker>
+    <internal>
+      <host>pRMQ_HA_VIP</host>
+      <vHost>/</vHost>
+      <username>mbss</username>
+      <password>ENC(805dd26e4250c3ad3bedee5b5f80bfc534024d87b45ba0b1db25875543fa4bad)</password>
+      <requestedHeartbeat>600</requestedHeartbeat>
+      <exchangeName>tera.public</exchangeName>
+      <exchangeType>direct</exchangeType>
+    </internal>
+  </broker>
+  <amqp>
+    <client>
+      <timeout>3600000</timeout>
+      <maxRetryPeriod>10000</maxRetryPeriod>
+    </client>
+  </amqp>
+  <subscription>
+    <numberOfConcurrentMessages>1</numberOfConcurrentMessages>
+    <coder>
+      <queueName>code</queueName>
+      <routingKey>code</routingKey>
+      <iris>
+        <queueName>code.iris</queueName>
+        <routingKey>code.iris</routingKey>
+      </iris>
+      <finger>
+        <queueName>code.finger</queueName>
+        <routingKey>code.finger</routingKey>
+      </finger>
+      <face>
+        <queueName>code.face</queueName>
+        <routingKey>code.face</routingKey>
+      </face>
+    </coder>
+    <matcher>
+      <basename>match</basename>
+      <matchtypes>
+          <type>
+              <id>0</id>
+              <gridratio>1</gridratio>
+              <MCperString>2</MCperString>
+          </type>
+          <!-- uncomment to instanciate specialized MC -->
+          <type>
+              <id>1</id>
+              <gridratio>.25</gridratio>
+              <MCperString>1</MCperString>
+          </type>
+          <type>
+              <id>2</id>
+              <gridratio>.50</gridratio>
+              <MCperString>1</MCperString>
+          </type>
+      </matchtypes>
+      
+      <internal>
+        <exchangeName>
+          <match>tera.internal.match</match>
+          <admin>tera.internal.admin</admin>
+        </exchangeName>
+      </internal>
+    </matcher>
+    <sequence_checker>
+        <queueName>sequence_checker</queueName>
+        <routingKey>sequence_checker</routingKey>
+    </sequence_checker>
+    <oneone>
+      <queueName>oneOne</queueName>
+      <routingKey>oneOne</routingKey>
+      <iris>
+        <queueName>oneOne.iris</queueName>
+        <routingKey>oneOne.iris</routingKey>
+      </iris>
+      <finger>
+        <queueName>oneOne.finger</queueName>
+        <routingKey>oneOne.finger</routingKey>
+      </finger>
+      <face>
+        <queueName>oneOne.face</queueName>
+        <routingKey>oneOne.face</routingKey>
+      </face>
+    </oneone>
+  </subscription>
+  <queueManagement>
+    <!-- Note: allowed ids for defaultQueue: from 9 to 0 (highest to lowest priority) -->
+    <!-- RabbitMQ must be restarted after changing this value -->
+    <defaultQueue>5</defaultQueue>
+    <!-- Anti Starvation (experimental) -->
+    <!-- When set to 0, the starvation management is deactivated -->
+    <!-- When set to N > 0, ONE AND ONLY ONE message will be pulled out of EACH queue every N seconds. -->
+    <!-- if N is too small (smaller than average response time) the effect might be that high priority messages are not pulled fast enough -->
+    <!-- leave the default value unless it is absolutely necessary -->
+    <starvationManagement>0</starvationManagement>
+  </queueManagement>
+  <zookeeper>
+    <connectString>SERVER23:2181,SERVER01:2181,SERVER10:2181,SERVER20:2181,SERVER30:2181,SERVER22:2181</connectString>
+    <username>mbss</username>
+    <password>ENC(805dd26e4250c3ad3bedee5b5f80bfc534024d87b45ba0b1db25875543fa4bad)</password>
+    <timeout>30000</timeout>
+  </zookeeper>
+  <!--database>
+    <driver>oracle.jdbc.OracleDriver</driver>
+    <connectionString>jdbc:oracle:thin:@[ip adress of oracle db]:[port]:[db instance]</connectionString>
+    <user>mimauser</user>
+    <password>mimauser</password>
+    <maxActive>30</maxActive>
+    <cfvTable>cfv_versioned</cfvTable>
+    <mimaTable>mima_versioned</mimaTable>
+    <lcfvTable>lcfv_versioned</lcfvTable>
+    <lmimaTable>lmima_versioned</lmimaTable>
+  </database-->
+  <teradb>
+    <!-- Note: cachesize value is a number of mimalogs -->
+    <!-- Refer to the documentation before changing the default value -->
+    <cachesize>10</cachesize>
+    <!-- Note: chunksize value is in bytes -->
+    <chunksize>33554432</chunksize>
+    <!-- Note: minspace value is in megabytes -->
+    <!-- Don't leave the default value on a production system. Refer to the documentation -->
+    <minspace>1024</minspace>
+  </teradb>
+  <algo>
+    <mima>
+      <numberOfCpus>
+        <IC>1</IC>
+        <LU>60</LU>
+        <MC>4</MC>
+        <MU>30</MU>
+        <others>1</others>
+      </numberOfCpus>
+      <scenario>
+        <enable>false</enable>
+        <scenarioPath>.</scenarioPath>
+      </scenario>
+    </mima>
+    <mc>
+      <microThreadsParameter>0</microThreadsParameter>
+      <iceCpu>0</iceCpu>
+      <qdm>
+        <fingerThreshold>100000</fingerThreshold>
+        <irisThreshold>100000</irisThreshold>
+      </qdm>
+    </mc>
+    <fe>
+      <logLevel>2</logLevel> <!-- 0=trace, 1=debug, 2=info, 3=error -->
+      <saveDebugImages>0</saveDebugImages> <!-- if set to 1 images with segmentation boxes and minutiae will be written to the disk as requestId*.bmp where * is a combination registration number/finger number -->
+      <nbCores>1</nbCores> <!-- number of cores to use in each codeFinger exe. 0: use all cores available one the machine (use only if there is only one codeFinger on the machine). other than 0: number of cores to use. default 1 (usual use case: 1 thread CU per core, i.e. 1 core per codeFinger) -->
+      <sse>1</sse> <!-- set to 0 not to use SSE instructions-->
+    </fe>
+    <miCode>
+      <logLevel>2</logLevel> <!-- 0=trace, 1=debug, 2=info, 3=error -->
+    </miCode>
+    <sequenceCheck>
+      <logLevel>2</logLevel> <!-- 0=trace, 1=debug, 2=info, 3=error -->
+    </sequenceCheck>
+    <moo>
+      <logLevel>2</logLevel> <!-- 0=trace, 1=debug, 2=info, 3=error -->
+    </moo>
+  </algo>
+  <mirrorbroker>
+    <internal>
+      <host>sRMQ_HA_VIP</host>
+      <vHost>/</vHost>
+      <username>mbss</username>
+      <!--password>ENC(805dd26e4250c3ad3bedee5b5f80bfc534024d87b45ba0b1db25875543fa4bad)</password-->
+      <password>morpho</password>
+      <requestedHeartbeat>600</requestedHeartbeat>
+      <exchangeName>tera.public</exchangeName>
+      <exchangeType>direct</exchangeType>
+    </internal>
+  </mirrorbroker>
+  <nagios>
+    <nsca>
+        <sendNscaNotifications>false</sendNscaNotifications>
+        <nscaHost>xxx.xxx.xxx.xxx</nscaHost>
+        <nscaPort>5667</nscaPort>
+        <nscaPassword>ENC(805dd26e4250c3ad3bedee5b5f80bfc534024d87b45ba0b1db25875543fa4bad)</nscaPassword>
+    </nsca>
+  </nagios>
+  <!-- Web service SSL -->
+  <!--ws>
+    <keyStorePath>path_to_key_store</keyStorePath>
+    <keyStorePassword>key_store_password</keyStorePassword>
+  </ws-->
+  
+  <adminDaemon>
+    <!-- 
+    comma-separated list of directories to monitor for cross-machine consistency checking.
+    If a path is invalid, it is ignored and the others are processed.
+    -->
+    <pathsToMonitor>/opt/mbss/conf,/opt/mbss/lib,/opt/mbss/bin64,/opt/mbss/conf/face,/opt/mbss/scripts,/opt/mbss/tools</pathsToMonitor>
+  </adminDaemon>
+</teragrid>

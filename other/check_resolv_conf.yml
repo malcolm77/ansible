@@ -1,0 +1,12 @@
+---
+# This playbook will check the contents of resolv.conf for a particular DNS ip address
+
+- name: Check for the primary DNS server
+  hosts: all
+  gather_facts: no
+  tasks:
+  - name: Check for primary DNS server
+    shell: grep 'nameserver xxx.xxx.xxx.xxx' /etc/resolv.conf
+    register: result
+    changed_when: result.rc != 0
+    failed_when: False

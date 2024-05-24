@@ -1,0 +1,118 @@
+---
+- name: Create all required groups
+  block:
+    - name: Create oinstall group
+      ansible.builtin.group:
+        name: oinstall
+        gid: 33900
+        state: present
+    - name: Create dba group
+      ansible.builtin.group:
+        gid: 33910
+        name: dba
+        state: present
+    - name: Create oper group
+      ansible.builtin.group:
+        gid: 33911
+        name: oper
+        state: present
+    - name: Create backupdba group
+      ansible.builtin.group:
+        gid: 33912
+        name: backupdba
+        state: present
+    - name: Create dgdba group
+      ansible.builtin.group:
+        gid: 33913
+        name: dgdba
+        state: present
+    - name: Create kmdba group
+      ansible.builtin.group:
+        gid: 33914
+        name: kmdba
+        state: present
+    - name: Create asmdba group
+      ansible.builtin.group:
+        gid: 33920
+        name: asmdba
+        state: present
+    - name: Create racdba group
+      ansible.builtin.group:
+        gid: 33915
+        name: racdba
+        state: present
+    - name: Create asmoper group
+      ansible.builtin.group:
+        gid: 33921
+        name: asmoper
+        state: present
+    - name: Create asmadmin group
+      ansible.builtin.group:
+        gid: 33922
+        name: asmadmin
+        state: present
+
+    - name: Create oracleexpimp group
+      ansible.builtin.group:
+        gid: 33930
+        name: oracleexpimp
+        state: present
+    - name: Create oraclelogview group
+      ansible.builtin.group:
+        gid: 33931
+        name: oraclelogview
+        state: present
+    - name: Create oraclelogadmin group
+      ansible.builtin.group:
+        gid: 33932
+        name: oraclelogadmin
+        state: present
+    - name: Create oraclenet group
+      ansible.builtin.group:
+        gid: 33933
+        name: oraclenet
+        state: present
+    - name: Create oraclesvcadm group
+      ansible.builtin.group:
+        gid: 33934
+        name: oraclesvcadm
+        state: present
+    - name: Create oracleusers group
+      ansible.builtin.group:
+        gid: 33935
+        name: oracleusers
+        state: present
+
+
+
+- name: Create all required users
+  block:  
+    - name: Create oracle user
+      ansible.builtin.user:
+        name: oracle
+        uid: 33910
+        group: oinstall
+        groups: dba,asmdba,oper,backupdba,dgdba,kmdba,racdba,wheel
+ 
+    - name: Create grid user
+      ansible.builtin.user:
+        name: grid
+        uid: 33920
+        group: oinstall 
+        groups: dba,asmadmin,asmdba,asmoper,racdba,wheel
+
+- name: Copy oracle bash_profile
+  ansible.builtin.copy:
+    src: oracle.bash_profile
+    dest: /home/oracle/.bash_profile
+    mode: '0644'
+
+- name: Copy grid bash_profile
+  ansible.builtin.copy:
+    src: grid.bash_profile
+    dest: /home/grid/.bash_profile
+    mode: '0644'
+
+
+
+

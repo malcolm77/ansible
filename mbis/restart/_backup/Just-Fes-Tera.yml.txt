@@ -1,0 +1,14 @@
+---
+
+- name: Start and Stop Services on all MBIS servers
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  roles:
+    - role: fesstartup
+      tags: startFES
+      when: inventory_hostname in groups['FES']
+    - role: terastartup
+      tags: startTERA
+      when: inventory_hostname in groups['TERA']

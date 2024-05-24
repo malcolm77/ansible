@@ -1,0 +1,15 @@
+# Create a new domain mailbox
+---
+- hosts: all
+  tasks:
+    - name: Add the user
+      user:
+        name: "{{ mailboxname }}"
+        comment: Livescan Mailbox
+        uid: "{{ userid }}"
+        shell: /sbin/nologin
+    - name: Set the password
+      user:
+        name: "{{ mailboxname }}"
+        update_password: always
+        password: "{{ password|password_hash('sha512') }}"

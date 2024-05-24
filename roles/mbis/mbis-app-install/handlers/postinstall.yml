@@ -1,0 +1,76 @@
+---
+
+# Check Host files!!
+
+
+# cp -r /opt/bis_CBR_INTEGRATION/ /opt/bis/
+
+
+
+
+
+
+
+- name: Run /opt/bis/wildfly-20.0.1.Final/standalone/configuration/create-bis-credentials.sh
+  ansible.builtin.command: /opt/bis/wildfly-20.0.1.Final/standalone/configuration/create-bis-credentials.sh
+  become: true
+  become_user: bis
+  ignore_errors: yes
+
+- debug :
+    var: _result
+
+- name: Ansible delete file glob
+  find:
+    paths: /opt/bis/jboss/standalone
+    patterns: 'deployments-pre-keycloak-*'
+    recurse: no
+    file_type: directory
+  register: directory_to_delete
+
+- name: Recursively remove directory
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+  with_items: "{{ directory_to_delete.files }}"
+  register: _results
+  become: true
+  become_user: bis
+
+- ansible.builtin.debug:
+    var: _results
+
+
+# This run AuthMigrator.sh
+- name: Update LDAP Configuration
+  become_user: bis
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  ansible.builtin.command: ./load_all.sh
+  register: _result
+  failed_when: "'Completed successfully : AuthData' not in _result.stdout"
+  args:
+    chdir: /opt/bis/auth/scripts
+
+
+- name: Copy certificates directory to /bis/certificates/
+  ansible.builtin.copy:
+    src: "./files/certificates"
+    dest: "/opt"
+    owner: bis
+    group: bis
+    directory_mode:
+  become: true
+  become_user: root
+
+- name: "Deploy SSL Certificates - bis"
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  ansible.builtin.shell: /opt/bis/keycloak-config/scripts/configure-deployments.sh
+  ansible.builtin.command: sh /opt/certificates/scripts/link-certificates.sh wildfly des
+  register: _results
+
+- ansible.builtin.debug:
+    var: _results
+

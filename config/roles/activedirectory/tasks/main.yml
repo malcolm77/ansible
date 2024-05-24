@@ -1,0 +1,20 @@
+- name: Install Packages
+  ansible.builtin.yum:
+    name:
+      - adcli 
+      - sssd
+      - authconfig
+    state: present
+
+- name: Copy installer
+  copy:
+    src: join-ad.sh
+    dest: /Extras
+- name: Copy kerberos file
+  copy:
+    src: krb5.conf
+    dest: /Extras/krb5.conf
+- name: Copy sssd.conf file
+  copy:
+    src: sssd.conf
+    dest: /Extras/sssd.conf

@@ -1,0 +1,44 @@
+---
+# Setup various compentents of a server, 
+# depending on what tag is given
+#
+# ansible-playbook -l SERVER, site.yml --tags=hosts
+
+- name: Config server
+  gather_facts: yes
+  become: yes
+  hosts: all
+  remote_user: ansible
+  #vars_files:
+  #  ~/svc_ansible.yml
+
+
+  roles:
+    - role: hosts		# update/replace /etc/hosts file
+      tags: base, hosts
+#    - role: repo		# update/replace /etc/yum.repo.d/pbimm-vsd-png03.repo file (fixed in custom ISO)
+#      tags: base, repo   	
+#    - role: resolv             # update/replace /etc/resolv.conf  (not required, fixed via nmcli during setup)
+#      tags: base, resolv
+#    - role: timezone		# Set timezone to Sydney, Australia (fix in custom ISO)
+#      tags: base, timezone
+    - role: ssh	                # set SSH login banner and AllowGroups setting
+      tags: base, ssh 
+    - role: chrony              # set chrony to point to TOR switch
+      tags: base, time
+    - role: firewall            # enable firewall
+      tags: base,firewall
+    - role: nodeexporter        # install the node_exporter and add server name to prometheus on monitoring host
+      tags: base,node
+    - role: hardening           # copy and but dont run hardening scripts
+      tags: base,harden
+    - role: email               # set email/postfix 
+      tags: mail 
+    - role: activedirectory     # install some services and copy some configuration files to the server
+      tags: base,AD                  # the /tmp/join-ad.sh script will need to be run manually on the server to complete
+    - role: tenable             # grant the nafis\svc_tenable account ssh and sudo access
+      tags: tenable
+    - role: sudoers             # fix the sudoers file
+      tags: sudo
+    - role: logrotate           # Copy MBSS and MIBS logrotate config files to server
+      tags: logrotate

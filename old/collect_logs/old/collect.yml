@@ -1,0 +1,24 @@
+---
+- name: Collect all log files for the Frence team
+  gather_facts: yes
+  become: yes
+  hosts: DES,FES,JBOSS,TERA,SERVER07,SERVER40
+
+  roles:
+    - role: mbislog
+      tags: mbis
+    - role: mbisout
+      tags: mbis
+    - role: mbss
+      tags: mbss
+      vars:
+        base: "morphobss-"
+        date: "2022-06-21"
+        src_path: "/var/log/td-agent/mbss.default/"
+        dest_path: "/all_logs/"
+    #- role: oracle
+    #  tags: oracle
+    #  delegate_to: SERVER01
+    #- role: clean
+    #  tags: clean
+    #  delegate_to: SERVER03

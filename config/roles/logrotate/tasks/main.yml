@@ -1,0 +1,21 @@
+- name: Check for MBIS logs folder
+  ansible.builtin.stat:
+    path: /opt/bis/logs
+  register: mbis_logs
+
+- name: Check for MBSS logs folder
+  ansible.builtin.stat:
+    path: /opt/mbss/logs
+  register: mbss_logs
+
+- name: Copy MBIS LogRotate file
+  ansible.builtin.copy: 
+    src: mbis
+    dest: /etc/logrotate.d/mbis
+  when: mbis_logs.stat.exists
+
+- name: Copy MBSS LogRotate file
+  ansible.builtin.copy: 
+    src: mbss
+    dest: /etc/logrotate.d/mbss
+  when: mbss_logs.stat.exists

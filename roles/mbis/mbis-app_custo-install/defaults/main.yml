@@ -1,0 +1,6 @@
+---
+# defaults file for mbis-app_custo-install
+
+mbis_package_name: bis-customization-backend
+
+

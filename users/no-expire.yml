@@ -1,0 +1,6 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: no
+  tasks:
+    - shell: /usr/bin/chage -I -1 -m 0 -M 99999 -E -1 "{{ username }}"

@@ -1,0 +1,15 @@
+---
+- name: Setup a new partition
+  hosts: SERVER01
+  become: yes
+  gather_facts: yes
+
+  roles:
+    - role: partition
+      tags: partition
+    - role: vgroup
+      tags: vgroup
+    - role: lvol
+      tags: lvol
+    - role: filesystem
+      tags: fstab

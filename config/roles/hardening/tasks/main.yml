@@ -1,0 +1,23 @@
+---
+- name: Copy scripts Zip file to server
+  ansible.builtin.copy:
+    src: rhel_hardening.zip
+    dest: /tmp/rhel_hardening.zip
+    owner: ansible
+    group: ansible
+    mode: '0640'
+
+- name: Copy harden-run script to server
+  ansible.builtin.copy:
+    src: harden.sh
+    dest: /tmp/harden.sh
+    owner: ansible
+    group: ansible
+    mode: '0640'
+
+- name: unzip file
+  ansible.builtin.unarchive:
+    src: /tmp/rhel_hardening.zip
+    dest: /tmp/
+    remote_src: yes
+

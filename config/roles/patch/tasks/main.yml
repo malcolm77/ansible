@@ -1,0 +1,7 @@
+- name: Install latest security patches
+  ansible.builtin.yum:
+    name: "*"
+    state: latest
+    exclude: kernel*, java* 
+    disable_gpg_check: no
+    security: yes

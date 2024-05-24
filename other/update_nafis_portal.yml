@@ -1,0 +1,23 @@
+## Ansible Playbook to copy the domain portal files from GIT to the PDC and SDC web servers.
+
+- name: Update PDC domainportal
+  gather_facts: false
+  hosts: all
+  tasks:
+  - name: Git Pull
+    git:
+      repo: 'http://pbimm-vpd-pns03:3000/Idemia/domain-Portal.git'
+      dest: /var/www/html
+      force: no
+  - name: Make sure permissions are correct
+    file: 
+      path: /var/www/html
+      owner: apache 
+      group: apache
+      recurse: yes
+  - name: Make sure permissions are correct for correct 
+    file: 
+      path: /var/www/html/statsandwip.html
+      owner: apache 
+      group: apache
+      mode: '666'

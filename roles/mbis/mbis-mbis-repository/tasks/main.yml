@@ -1,0 +1,38 @@
+---
+# tasks file for mbis-mbis-repository
+
+# - name: Clear yum cache
+#   ansible.builtin.command: yum clean packages
+#   changed_when: false
+#   become: true
+#   become_user: root
+
+# # Create repositiories based on Build variables.
+# - name: Load OS-specific variables
+#   include_vars: " {{ansible_facts['distribution']+ ansible_facts['distribution_version'] }}.yml "
+
+- name: Remove old mbis.repo file (delete file), to prevent duplicate repos # To be delete after depoyment to prototype
+  ansible.builtin.file:
+    path: "/etc/yum.repos.d/{{ item }}"
+    state: absent
+  become: true
+  become_user: root
+  with_items:
+    - mbis.repo.repo
+    - mbss.repo.repo
+    - external_repos.repo
+    - ansible_repos.repo
+    - mbis-releases.repo
+    - rhel8.repo
+    - ansible_mbis
+
+- name: Install Redhat repos
+  include_tasks: OS.yml
+
+- name: Install mbis repos
+  include_tasks: mbis.yml
+
+- name: Install mbss repos
+  include_tasks: mbss.yml
+
+

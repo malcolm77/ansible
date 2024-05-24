@@ -1,0 +1,47 @@
+---
+# tasks file for mbis-sso-install
+
+- name: Install SSO packages, if error remove custom app packages and try agian.
+  block:
+  - name: "Installation of MBIS SSO STD packages - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify:
+    - postinstall mbis
+
+  - ansible.builtin.debug:
+      var: _result
+
+  rescue:
+  - name: Uninstall app custo package when yum detects a file conflict
+    ansible.builtin.import_role:
+      name: mbis/mbis-app_custo-install
+      tasks_from: uninstall.yml
+
+
+  - name: "Installation of MBIS SSO STD packages - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify:
+    - postinstall mbis
+
+
+
+  - ansible.builtin.debug:
+      var: _result

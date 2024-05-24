@@ -1,0 +1,14 @@
+---
+
+- name: Start Des
+  ansible.builtin.command: /opt/bis/scripts/DesStartup
+  become_user: bis
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  register: _results
+  failed_when: "'Running  with PID' not in _results.stdout"
+
+  # Monitor multipule Des files for errors.
+  # timeout 30 tail -f /opt/bis/log/des*.log | sed -n '/ERROR\|==>/p

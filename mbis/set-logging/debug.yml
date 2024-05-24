@@ -1,0 +1,11 @@
+---
+
+- name: Set FES to DEBUG
+  gather_facts: yes
+  become: yes
+  hosts: DES,FES,JBOSS,TERA,SERVER07
+
+  roles:
+    - role: debug
+
+

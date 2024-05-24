@@ -1,0 +1,79 @@
+---
+- name: Remove all required users
+  block:  
+    - name: Remove oracle user
+      ansible.builtin.user:
+        name: oracle
+        state: absent
+ 
+    - name: Remove grid user
+      ansible.builtin.user:
+        name: grid
+        state: absent
+
+- name: Remove all required groups
+  block:
+    - name: Remove oinstall group
+      ansible.builtin.group:
+        name: oinstall
+        state: absent
+    - name: Remove dba group
+      ansible.builtin.group:
+        name: dba
+        state: absent
+    - name: Remove oper group
+      ansible.builtin.group:
+        name: oper
+        state: absent
+    - name: Remove backupdba group
+      ansible.builtin.group:
+        name: backupdba
+        state: absent
+    - name: Remove dgdba group
+      ansible.builtin.group:
+        name: dgdba
+        state: absent
+    - name: Remove kmdba group
+      ansible.builtin.group:
+        name: kmdba
+        state: absent
+    - name: Remove asmdba group
+      ansible.builtin.group:
+        name: asmdba
+        state: absent
+    - name: Remove racdba group
+      ansible.builtin.group:
+        name: racdba
+        state: absent
+    - name: Remove asmoper group
+      ansible.builtin.group:
+        name: asmoper
+        state: absent
+    - name: Remove asmadmin group
+      ansible.builtin.group:
+        name: asmadmin
+        state: absent
+    - name: Remove oracleexpimp group
+      ansible.builtin.group:
+        name: oracleexpimp
+        state: absent
+    - name: Remove oraclelogview group
+      ansible.builtin.group:
+        name: oraclelogview
+        state: absent
+    - name: Remove oraclelogadmin group
+      ansible.builtin.group:
+        name: oraclelogadmin
+        state: absent
+    - name: Remove oraclenet group
+      ansible.builtin.group:
+        name: oraclenet
+        state: absent
+    - name: Remove oraclesvcadm group
+      ansible.builtin.group:
+        name: oraclesvcadm
+        state: absent
+    - name: Remove oracleusers group
+      ansible.builtin.group:
+        name: oracleusers
+        state: absent

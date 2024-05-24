@@ -1,0 +1,39 @@
+# Fix the node exporter service,
+# so it doesn't try and collect infiniband info
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+  remote_user: svc_ansible
+  vars_files:
+    ~/svc_ansible.yml
+
+  tasks:
+  - name: Stop Node Exporter
+    ansible.builtin.service:
+      name: node_exporter
+      state: stopped
+
+  - name: Create folder for text collector
+    ansible.builtin.file:
+      path: /tmp/node
+      state: directory
+      owner: node_exporter
+      group: node_exporter
+      mode: '0755'
+
+  - name: Fix parameter
+    ansible.builtin.lineinfile:    
+      path: /etc/systemd/system/node_exporter.service
+      regexp: '^ExecStart='
+      line: ExecStart=/usr/local/bin/node_exporter --no-collector.infiniband --collector.systemd --collector.systemd.unit-whitelist="firewalld.service" --collector.textfile.directory=/tmp/node
+
+  - name: Reload Service config file
+    ansible.builtin.service:
+      name: node_exporter
+      daemon_reload: true
+
+  - name: Start Node Exporter
+    ansible.builtin.service:
+      name: node_exporter
+      state: started

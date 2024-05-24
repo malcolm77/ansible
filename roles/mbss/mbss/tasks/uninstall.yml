@@ -1,0 +1,31 @@
+---
+
+- name: "Stop Zookeeper service"
+  service:
+    name: "zookeeper-server"
+    state: stopped
+  failed_when: false
+
+- name: "Remove zookeeper package"
+  package:
+    name: "{{ zookeeper_package_name|default('mbss-zookeeper-server') }}"
+    state: "absent"
+
+- name: "Remove zookeeper directories"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "/var/lib/zookeeper"
+    - "/var/log/zookeeper"
+    - "/etc/zookeeper"
+
+- name: "Remove zookeeper user"
+  user:
+    name: zookeeper
+    state: absent
+
+- name: "Remove zookeeper group"
+  group:
+    name: zookeeper
+    state: absent

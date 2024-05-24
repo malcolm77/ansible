@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+    - shell: uname -r
+      register: shell_output
+    
+    - debug:
+        var: shell_output.stdout_lines

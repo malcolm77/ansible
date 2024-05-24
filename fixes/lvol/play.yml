@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Resize lvol
+      community.general.lvol:
+        vg: rootvg
+        lv: varlogauditlv 
+        size: +1G
+        resizefs: true
+

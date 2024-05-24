@@ -1,0 +1,20 @@
+#!/bin/bash
+####################################################################
+##
+## Script to update the local RHEL7 repo
+## which is used by all the other RHEL7 servers in PreProd
+##
+####################################################################
+
+# Update the repo with the packages from RedHat
+reposync --gpgcheck -l --repoid=rhel-6-server-rpms --download_path=/var/repo
+createrepo /var/repo/rhel-6-server-rpms
+
+# Get the repo ready for use by the other servers
+yum clean all
+yum list-sec
+# find /var/cache/yum/ -name updateinfo.xml
+/bin/cp --force /var/cache/yum/x86_64/6Server/rhel-6-server-rpms/gen/updateinfo.xml /var/repo/rhel-6-server-rpms/repodata/updateinfo.xml
+modifyrepo /var/repo/rhel-6-server-rpms/repodata/updateinfo.xml /var/repo/rhel-6-server-rpms/repodata
+chown -R apache:apache /var/repo/*
+

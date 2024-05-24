@@ -1,0 +1,4 @@
+- name: Add new partition to existing volume group
+  community.general.lvg:
+    vg: "{{ volume_group }}"
+    pvs: "{{ existing_pvs }},{{ device }}{{ partition_number }}"

@@ -1,0 +1,56 @@
+all:
+  children:
+    env_prodtest: # variables defined at this groups can be found in group vars
+      children:
+        build_prodtest:
+          vars:
+            ip_bisapp: xxx.xxx.xxx.xxx
+            ip_keycloak: xxx.xxx.xxx.xxx
+          children:
+            mbis_jboss:
+              hosts:
+                bis88:
+                  ansible_host: xxx.xxx.xxx.xxx
+            mbis_wms:
+              hosts:
+                bis88:
+                  ansible_host: xxx.xxx.xxx.xxx
+            #mbis_des:
+            #  hosts:
+            #    bis91:
+            #      ansible_host: xxx.xxx.xxx.xxx
+            #mbis_fes:
+            #  hosts:
+            #    bis92:
+            #      ansible_host: xxx.xxx.xxx.xxx
+            #mbis_SSO:
+            #  hosts:
+            #    bis89:
+            #      ansible_host: xxx.xxx.xxx.xxx
+            #mbis_tera :
+            #  hosts:
+            #    bis93:
+            #      ansible_host: xxx.xxx.xxx.xxx
+            #mbis_db:
+            #  hosts:
+            #    bisdb:
+            #      ansible_host: xxx.xxx.xxx.xxx
+            # mbss_dc:
+            #   hosts:
+            #     mbss_dc_host:
+            #       ansible_host: xxx.xxx.xxx.xxx
+            #mbss:
+            #  hosts:
+            #    mbss:
+            #      ansible_host: xxx.xxx.xxx.xxx
+            # zookeepers:
+            #   hosts:
+            #     mbss:
+            #       ansible_host: xxx.xxx.xxx.xxx
+            # rabbitmq:
+            #   hosts:
+            #     mbss:
+            #       ansible_host: xxx.xxx.xxx.xxx
+
+
+

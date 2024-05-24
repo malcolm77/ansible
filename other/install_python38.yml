@@ -1,0 +1,15 @@
+---
+- name: Install a package on one or more systems 
+  hosts: all
+  gather_facts: yes
+  become: true
+  serial: 1
+  
+  tasks: 
+    - name: Install listed packages
+      ansible.builtin.yum:
+        name: "{{ packages }}"
+        state: latest
+      vars:
+        packages:
+        - python38

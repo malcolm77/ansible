@@ -1,0 +1,37 @@
+{{ ansible_managed | comment }}
+
+maxClientCnxns={{ zookeeper_max_client_cnxns|default('0') }}
+tickTime={{ zookeeper_tick_time|default('2000') }}
+initLimit={{ zookeeper_init_limit|default('10') }}
+syncLimit={{ zookeeper_sync_limit|default('5') }}
+dataDir=/var/lib/zookeeper
+dataLogDir=/var/lib/zookeeper/datalog
+clientPort={{ zookeeper_client_port|default('2181') }}
+maxSessionTimeout={{ zookeeper_max_session_timeout|default('600000') }}
+autopurge.snapRetainCount={{ zookeeper_snap_retain_count|default('3') }}
+autopurge.purgeInterval={{ zookeeper_purge_interval|default('1') }}
+leaderServes={{ zookeeper_leader_serves|default('yes') }}
+
+authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+requireClientAuthScheme=sasl
+allowSaslFailedClients=false
+
+# renew server-side ticket once an hour. 1000*60*60 = 3600000 milliseconds
+jaasLoginRenew={{ zookeeper_jaas_login_renew|default('3600000') }}
+
+{% if groups['zookeepers']|length > 1 %}
+# Voters
+{% for voter in ((groups['zookeeper_voters']|default([]))|sort) %}
+server.{{ loop.index }}={{ hostvars[voter].hostname | default(voter) }}:2888:3888
+{% endfor %}
+{%- if (groups['zookeeper_observers']|default([]))|length > 0 %}
+# Observers
+{% for observer in ((groups['zookeeper_observers']|default([]))|sort) %}
+server.{{ loop.index + groups['zookeeper_voters']|length }}={{ hostvars[observer].hostname | default(observer) }}:2888:3888:observer
+{% endfor %}
+{% endif %}
+{% endif %}
+
+{% if 'zookeeper_observers' in group_names %}
+peerType=observer
+{% endif %}

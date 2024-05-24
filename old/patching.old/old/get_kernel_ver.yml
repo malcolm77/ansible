@@ -1,0 +1,9 @@
+---
+- name: Get Kernel Version
+  hosts: all
+  become: yes
+  tasks:
+  - name: Print kernel release version facts
+    debug:
+      msg: >
+        {{ ansible_facts.fqdn }} is running kernel version {{ ansible_facts.facter_kernelrelease }}

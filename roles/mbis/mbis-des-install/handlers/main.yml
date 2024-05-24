@@ -1,0 +1,18 @@
+---
+# handlers file for mbis-des-install
+
+
+- name: Import Des Custo handlers for uninstall
+  include_tasks:  mbis/mbis-des_custo-install/handlers/main.yml
+
+- name: Mbis shutdown commands
+  include_tasks: handlers/shutdown.yml
+  listen: "shutdown mbis"
+
+- name: Mbis Post Install commands
+  include_tasks:  handlers/postinstallhandlers.yml
+  listen: "postinstall mbis"
+
+- name: Mbis Startup commands
+  include_tasks: handlers/startup.yml
+  listen: "startup mbis"

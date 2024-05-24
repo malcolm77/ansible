@@ -1,0 +1,27 @@
+---
+# Version 1 - it works, but first step generates an error
+#
+- name: Remove everything from the /opt/bis/log folder
+  gather_facts: yes
+  become: yes
+  hosts: all
+  ignore_errors: yes
+
+  tasks:
+    - name: remove log folder
+      ansible.builtin.file:
+        path: /opt/bis/log
+        state: absent
+    
+    - name: recreate log folder
+      ansible.builtin.file:
+        path: /opt/bis/log
+        state: directory
+        mode: '0770'
+    
+    - name: set permissions
+      ansible.builtin.file:
+        path: /opt/bis/log
+        state: directory
+        owner: bis
+        group: bis

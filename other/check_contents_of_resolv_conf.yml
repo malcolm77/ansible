@@ -1,0 +1,9 @@
+- hosts: all
+  gather_facts: now
+  tasks:
+    - name: "check the contents of resolv.conf"
+      copy:
+        src: /etc/resolv.conf
+        dest: /etc/resolv.conf
+      check_mode: yes
+      diff: yes

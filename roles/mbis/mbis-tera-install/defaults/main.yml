@@ -1,0 +1,9 @@
+---
+# defaults file for mbis-tera-install
+
+mbis_package_names:
+  - bis-tera
+  - bis-mds
+
+mbis_shutdown_package_service_names:
+  - { package_name: "bis-tera", service_name: "tera.service", shutdown_script: "TeraShutdown" }

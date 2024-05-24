@@ -1,0 +1,15 @@
+---
+# handlers file for mbis-fes-install
+
+
+- name: Mbis Startup commands
+  include_tasks: handlers/startup.yml
+  listen: "startup mbis"
+
+- name: Mbis shutdown commands
+  include_tasks: handlers/shutdown.yml
+  listen: "shutdown mbis"
+
+- name: Mbis Post Install commands
+  include_tasks:  handlers/postinstall.yml
+  listen: "postinstall mbis"

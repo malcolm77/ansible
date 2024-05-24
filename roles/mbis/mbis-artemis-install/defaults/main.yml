@@ -1,0 +1,10 @@
+---
+# defaults file for mbis-artemis-install
+
+mbis_package_names:
+ - bis-artemis-service
+
+mbis_shutdown_package_service_names:
+ - { package_name: "bis-artemis-service", service_name: "artemis.service", shutdown_script: "ArtemisShutdown"}
+
+

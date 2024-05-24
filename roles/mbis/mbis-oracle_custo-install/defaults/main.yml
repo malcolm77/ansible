@@ -1,0 +1,4 @@
+---
+# defaults file for mbis-oracle_custo-install
+
+mbis_package_names: bis-customization-dbm-oracle

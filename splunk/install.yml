@@ -1,0 +1,83 @@
+---
+- hosts: all
+  become: yes
+  ignore_errors: true
+  serial: 1
+  vars:
+    SPLUNK: splunkforwarder-9.0.2-17e00c557dc1-linux-2.6-x86_64.rpm
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: Remove any existing splunk forwarder install
+    ansible.builtin.yum:
+      name: splunkforwarder.x86_64
+      disablerepo: "ansible_mbis,ansible_mbis_custo,ansible_mbis_common"
+      state: absent
+
+  - name: Remove old splunk forwarder folder
+    ansible.builtin.file:
+      path: /opt/splunkforwarder
+      state: absent
+
+  - name: Remove old splunk service file
+    ansible.builtin.file:
+      path: /etc/systemd/system/SplunkForwarder.service
+      state: absent
+
+  - name: Remove old splunk service file
+    ansible.builtin.file:
+      path: /etc/init.d/splunk
+      state: absent
+
+  - name: Copy Splunk installer
+    copy:
+      src: "{{ SPLUNK }}"
+      dest: /tmp
+      owner: ansible
+      group: ansible
+      mode: '0644'
+
+  - name: Install Splunk Forwarder
+    ansible.builtin.yum:
+      name: "/tmp/{{ SPLUNK }}"
+      disablerepo: "ansible_mbis,ansible_mbis_custo,ansible_mbis_common"
+      disable_gpg_check: true
+      state: present
+
+  - name: Copy server.conf file
+    copy:
+      src: server.conf
+      dest: /opt/splunkforwarder/etc/system/local/server.conf
+      owner: splunk
+      group: splunk
+      mode: '0644'
+
+  - name: Copy deploymentclient.conf file
+    copy:
+      src: deploymentclient.conf
+      dest: /opt/splunkforwarder/etc/system/local/deploymentclient.conf
+      owner: splunk
+      group: splunk
+      mode: '0644'
+
+  - name: setup forwarder
+    command: /opt/splunkforwarder/bin/splunk start --accept-license --no-prompt --seed-password 2c1487077989ed
+
+  - name: Configure Splunk with the deployment server (need to be down)
+    command: /opt/splunkforwarder/bin/splunk set deploy-poll SERVER05:8089
+
+  - name: make sure forwarder is in a stopped state
+    command: /opt/splunkforwarder/bin/splunk stop
+
+  - name: enable forwarder (needs to be down)
+    command: /opt/splunkforwarder/bin/splunk enable boot-start
+
+  - name: start forwarder
+    command: /opt/splunkforwarder/bin/splunk start
+
+  - name: cleanup
+    file:
+      path: "/tmp/{{ SPLUNK }}"
+      state: absent
+

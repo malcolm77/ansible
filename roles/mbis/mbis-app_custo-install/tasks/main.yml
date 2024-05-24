@@ -1,0 +1,64 @@
+---
+# tasks file for mbis-app_custo-install
+
+# Nothing to change
+# ok: [mbisMachine] => {
+#     "_result": {
+#         "ansible_job_id": "777692527434.30574",
+#         "changed": false,
+#         "failed": false,
+#         "finished": 1,
+#         "msg": "Nothing to do",
+#         "rc": 0,
+#         "results": []
+#     }
+# }
+
+# Changed
+# ok: [mbisMachine] => {
+#     "_result": {
+#         "ansible_job_id": "43558603754.15110",
+#         "changed": true,
+#         "failed": false,
+#         "finished": 1,
+#         "msg": "",
+#         "rc": 0,
+#         "results": [
+#             "Installed: bis-keycloak-server-5.10.0-2201072252.noarch",
+#             "Installed: bis-auth-db-5.10.0-2201072239.noarch"
+#         ]
+#     }
+# }
+
+
+- name: "TEST: Yum Install MBIS backend custo packages "
+  yum:
+    name: "{{custorepopackagepath}}bis-customization-backend-mbis.rpm"
+    state: present
+    disablerepo: "*"
+  become: true
+  become_user: root
+  register: _yumcustoinstall
+  check_mode: yes
+
+
+- name: Uninstall App custo package when yum detects a file conflict
+  import_tasks: uninstall.yml
+  when: _yumcustoinstall.changed or _yumcustoinstall.failed
+
+
+- name: "Install MBIS backend custo packages "
+  ansible.builtin.shell: |
+    rpm -ivh --replacefiles {{custorepopackagepath}}bis-customization-backend-mbis.rpm
+  become: true
+  become_user: root
+  register: result
+  notify: "custo postinstall mbis"
+  when: _yumcustoinstall.changed or _yumcustoinstall.failed
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+  when: _yumcustoinstall.changed or _yumcustoinstall.failed
+
+

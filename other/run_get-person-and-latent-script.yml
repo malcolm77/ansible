@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: run person script
+    shell: /root/scripts/get-person-count.sh
+  - name: run person and latent count script
+    shell: /root/scripts/get-person-count.sh

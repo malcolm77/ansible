@@ -1,0 +1,17 @@
+---
+- hosts: all
+  become: yes
+  ignore_errors: true
+  gather_facts: false
+  serial: 1
+
+  tasks:
+  - name: stop forwarder
+    command: /opt/splunkforwarder/bin/splunk stop
+
+  - name: enable boot-start 
+    command: /opt/splunkforwarder/bin/splunk enable boot-start
+
+  - name: start forwarder
+    command: /opt/splunkforwarder/bin/splunk start
+

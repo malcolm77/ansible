@@ -1,0 +1,13 @@
+# Rotate MBSS logs
+# /etc/logrotate.d/mbss
+
+/opt/mbss/logs/*.log {
+    su mbss mbssadmin
+    daily
+    missingok
+    notifempty
+    rotate 14
+    compress
+    delaycompress
+    copytruncate
+}

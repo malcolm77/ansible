@@ -1,0 +1,6 @@
+---
+# handlers file for mbis-elk_custo
+
+- name: Mbis Post Install commands
+  include_tasks:  handlers/postinstall.yml
+  listen: "postinstall mbis"

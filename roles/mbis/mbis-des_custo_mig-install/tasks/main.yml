@@ -1,0 +1,35 @@
+---
+# tasks file for mbis-des_custo_mig-install
+
+- name: "TEST: Yum Install MBIS backend custo packages "
+  yum:
+    name: "{{custorepopackagepath}}bis-customization-des-mig-mbis.rpm"
+    state: present
+    disablerepo: "*"
+  ignore_errors: yes
+  become: true
+  become_user: root
+  register: _yumcustoinstall
+  check_mode: yes
+
+- name: Uninstall Des-mig custo package when yum detects a file conflict
+  import_tasks: uninstall.yml
+  when: _yumcustoinstall.changed or _yumcustoinstall.failed
+
+
+- name: "Install MBIS des custo packages "
+  ansible.builtin.shell: |
+    rpm -ivh --replacefiles {{custorepopackagepath}}bis-customization-des-mig-mbis.rpm
+  become: true
+  become_user: root
+  register: result
+  #notify: "postinstall mbis"
+  when: _yumcustoinstall.changed or _yumcustoinstall.failed
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result.stdout_lines
+  when: _yumcustoinstall.changed or _yumcustoinstall.failed
+
+
+

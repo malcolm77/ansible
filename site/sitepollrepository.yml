@@ -1,0 +1,74 @@
+
+
+
+- name: SVN repo check for changes
+  hosts: Jenkins # Building on JENKINS-SLAVE for now, will be moved to a diferent host a a last stage
+  remote_user: root
+  become_user: jenkins
+  become: true
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+  gather_facts: no
+
+  vars:
+  - repoPath: /custo/integration
+  - aucjacicCheckoutConfigPath: /opt/jenkins/checkout/project/integration
+  - packageCheckoutBrachTag: https://mph-svn-master-01.srv.sec.safran/au/cj/au-cj-acic/trunk
+  - ansible_python_interpreter: /usr/bin/python
+
+  tasks:
+  - name: SVN checkout
+    subversion:
+      repo: "{{ packageCheckoutBrachTag }}"
+      dest: "{{ aucjacicCheckoutConfigPath }}"
+      username: "g565928"
+      password: "Indy2pinguy$"
+      checkout: no
+    check_mode: yes
+    register: results
+
+  - name: debug
+    ansible.builtin.debug:
+      var: results
+
+  - name: Run build task
+    import_tasks: roles/build/tasks/main.yml
+    when: results.changed
+
+
+# ok: [jenkinssavle] => {
+#     "result": {
+#         "after": [
+#             "Revision: 1022",
+#             "URL: https://mph-svn-master-01.srv.sec.safran/au/cj/au-cj-acic/trunk"
+#         ],
+#         "ansible_facts": {
+#             "discovered_interpreter_python": "/usr/bin/python"
+#         },
+#         "before": [
+#             "Revision: 1021",
+#             "URL: https://mph-svn-master-01.srv.sec.safran/au/cj/au-cj-acic/trunk"
+#         ],
+#         "changed": true,
+#         "failed": false
+#     }
+# }
+
+
+# ok: [jenkinssavle] => {
+#     "result": {
+#         "after": [
+#             "Revision: 1022",
+#             "URL: https://mph-svn-master-01.srv.sec.safran/au/cj/au-cj-acic/trunk"
+#         ],
+#         "ansible_facts": {
+#             "discovered_interpreter_python": "/usr/bin/python"
+#         },
+#         "before": [
+#             "Revision: 1022",
+#             "URL: https://mph-svn-master-01.srv.sec.safran/au/cj/au-cj-acic/trunk"
+#         ],
+#         "changed": false,
+#         "failed": false
+#     }
+# }

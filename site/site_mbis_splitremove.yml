@@ -1,0 +1,112 @@
+---
+
+
+- name: Remove MBIS AIO
+  hosts: mbis_jboss, mbis_des, mbis_fes, mbis_SSO, mbis_tera, mbis_db
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars:
+  # default python execulable to be used in the target machine
+   - ansible_python_interpreter: /usr/bin/python3
+
+  pre_tasks:
+
+    # Covert to Role
+  - name: Pause when the environment is marked as locked using the host Environment_lock inventory variable,
+    ansible.builtin.pause:
+    when: Environment_lock != "no"
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: rpm
+
+  - name: Collect only selected facts
+    ansible.builtin.service_facts:
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+
+  tasks:
+    # # WARNING - Use this playbook at your own risk - Uninstallation procedure still needs to be qualified
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-license
+        tasks_from: backup.yml
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-app_custo-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-des_custo-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-des_custo_mig-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-oracle_custo-install
+        tasks_from: uninstall.yml
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-elk_custo
+        tasks_from: uninstall.yml
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-app-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-artemis-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-des-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-fes-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-oracle-install
+        tasks_from: uninstall.yml
+      # when: "'mbis_db' not in group_names"
+    - ansible.builtin.import_role:
+        name: mbis/mbis-sso-install
+        tasks_from: uninstall.yml
+    - ansible.builtin.import_role:
+        name:  mbis/mbis-tera-install
+        tasks_from: uninstall.yml
+
+    - ansible.builtin.import_role:
+        name:  mbis/mbis-common
+        tasks_from: uninstall.yml
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-bisdelete
+
+    # - ansible.builtin.import_role:
+    #     name: mbis/mbis-etchosts
+    #     tasks_from: remove.yml
+
+  post_tasks:
+
+
+  - name: Populate service facts
+    service_facts:
+
+  # required to resolved firewall configuration issues. to be converted to Role.
+  - name: "Restart firewalld and apply runtime to permanent"
+    ansible.builtin.shell: |
+      systemctl restart firewalld
+      sleep 5
+      firewall-cmd --runtime-to-permanent
+      firewall-cmd --permanent --add-port=22/tcp -q
+      firewall-cmd --reload
+      firewall-cmd --reload
+    become: true
+    become_user: root
+    when: ansible_facts.services["firewalld.service"] is defined
+
+  # post_tasks:

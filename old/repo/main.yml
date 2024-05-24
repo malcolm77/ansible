@@ -1,0 +1,9 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Copy NextGen Repo file to server
+    copy: 
+      src: /shared/pbimm-vsd-png03.repo
+      dest: /etc/yum.repos.d/pbimm-vsd-png03.repo
+      force: yes

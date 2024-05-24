@@ -1,0 +1,4 @@
+- name: Stop Des
+  become_user: bis
+  ansible.builtin.command: /opt/bis/scripts/DesShutdown
+

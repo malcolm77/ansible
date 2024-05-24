@@ -1,0 +1,9 @@
+---
+
+- ansible.builtin.import_tasks: main.yml
+  vars:
+  - hostfile: /etc/hosts
+  - hostnames:
+    - keycloak
+    - keycloak.mbis-dev.idemia.com
+  - IPaddress: "{{ip_keycloak }}"

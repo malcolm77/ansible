@@ -1,0 +1,17 @@
+---
+
+- name: Pause for 1min to allow bis_qualif config to be manually updated, if needed.
+  ansible.builtin.pause:
+    minutes: 1
+
+- name: Copy config files
+  ansible.builtin.copy:
+    src: "{{ EnvironmentConfigurationPath }}"  # loaded from inventory
+    dest: /opt/bis/
+    remote_src: yes
+    owner: bis
+    group: bis
+  register: _result
+
+- debug :
+    var: _result

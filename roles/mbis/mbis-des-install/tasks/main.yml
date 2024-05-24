@@ -1,0 +1,76 @@
+---
+# tasks file for mbis-des-install
+
+- name: Install mbis app packges, if errors remove custo package and try again.
+  block:
+  - name: "TEST Installation of MBIS Des STD packages - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - ansible.builtin.debug:
+      var: _result
+
+  - name: "Installation of MBIS Des STD packages - Names: [{{ mbis_des_package_names2 }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_des_package_names2 }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - ansible.builtin.debug:
+      var: _result
+
+  rescue:
+  - name: Uninstall custo package when yum detects a file conflict
+    ansible.builtin.import_role:
+      name: mbis/mbis-des_custo-install
+      tasks_from: uninstall.yml
+
+
+
+  - name: "Recue Installation of MBIS Des STD packages - Names: [{{ mbis_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - ansible.builtin.debug:
+      var: _result
+
+  - name: "Installation of MBIS Des STD packages - Names: [{{ mbis_des_package_names2 }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_des_package_names2 }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - ansible.builtin.debug:
+      var: _result

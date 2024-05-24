@@ -1,0 +1,4 @@
+---
+
+- ansible_RHEL-BaseOS: http://xxx.xxx.xxx.xxx/rhel-8-server-rpms/BaseOS
+- ansible_RHEL-AppStream: http://xxx.xxx.xxx.xxx/rhel-8-server-rpms/AppStream

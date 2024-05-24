@@ -1,0 +1,14 @@
+---
+- ansible.builtin.import_tasks: main.yml
+  vars:
+  - hostfile: /etc/hosts
+  - hostnames:
+    - bismatcher
+    - bisdb
+    - bisapp
+    - bisapp.mbis-dev.idemia.com
+    - ptkads
+    - bisartemis
+    - bisartemis.mbis-dev.idemia.com
+    - mbss
+  - IPaddress: "{{ ip_bisapp }}"

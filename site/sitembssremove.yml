@@ -1,0 +1,152 @@
+---
+#
+# - Name: sitembssyml
+# - Description:
+#  This playbook removes the components for mbss
+
+- name: Remove mbss
+  hosts: mbis_jboss, mbis_des, mbis_fes, mbis_SSO, mbis_tera, mbis_db
+  remote_user: root
+  # become: true
+  # become_user: mbss
+  # become_method: sudo   # Become method being used when manually running scripts
+  # become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+
+  tasks:
+  - name: "Stop MBSS adminDaemon service"
+    service:
+      name: "adminDaemon"
+      state: stopped
+    failed_when: false
+
+  - name: "Remove MBSS package"
+    package:
+      name:
+        - mbss-misc-cots
+        - bioparam-police-optimum-noface
+        - morphobss-noEC_highIP_PRINT
+      state: "absent"
+
+  - name: "Remove MBSS directories"
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/opt/mbss"
+      - "/var/log/mbss"
+
+
+  - name: "Remove mbss users"
+    user:
+      name: "{{ item }}"
+      state: absent
+    with_items:
+      - mbss
+      - mbssdataadmin
+      - mbssadmin
+
+  - name: "Remove mbss groups"
+    group:
+      name: "{{ item }}"
+      state: absent
+    with_items:
+      - mbss
+      - mbssdataadmin
+      - mbssadmin
+
+  - name: "Remove MBSS user home directories"
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/home/mbssadmin"
+      - "/home/mbssdataadmin"
+
+  - name: "backup  {{ mbss_data_root_directory }}"
+    vars:
+      mbss_data_root_directory: "/data"
+    block:
+    - name: "Remove {{ mbss_data_root_directory }}-old directory"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ mbss_data_root_directory }}-old"
+
+    - name: "Check that {{ mbss_data_root_directory }} exists"
+      ansible.builtin.stat:
+        path: "{{ mbss_data_root_directory }}"
+      register: "data_stat"
+
+    - name: "Backuping MBSS {{ mbss_data_root_directory }} in {{ mbss_data_root_directory }}-old"
+      ansible.builtin.shell: "cp -Rf {{ mbss_data_root_directory }} {{ mbss_data_root_directory }}-old; rm -Rf {{ mbss_data_root_directory }}/*"
+      args:
+        warn: no
+      when: data_stat.stat.exists
+
+
+  - name: "Stop RabbitMQ service"
+    service:
+      name: "rabbitmq-server"
+      state: stopped
+    failed_when: false
+
+  - name: "Remove RabbitMQ package"
+    package:
+      name:
+        - "rabbitmq-server"
+      state: "absent"
+
+  - name: "Remove rabbitmq directories"
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/var/lib/rabbitmq"
+      - "/var/log/rabbitmq"
+      - "/etc/rabbitmq"
+
+  - name: "Remove rabbitmq user"
+    user:
+      name: rabbitmq
+      state: absent
+
+  - name: "Remove rabbitmq group"
+    group:
+      name: rabbitmq
+      state: absent
+
+
+  - name: "Stop Zookeeper service"
+    service:
+      name: "zookeeper-server"
+      state: stopped
+    failed_when: false
+
+  - name: "Remove zookeeper package"
+    package:
+      name: "{{ zookeeper_package_name|default('mbss-zookeeper-server') }}"
+      state: "absent"
+
+  - name: "Remove zookeeper directories"
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/var/lib/zookeeper"
+      - "/var/log/zookeeper"
+      - "/etc/zookeeper"
+
+  - name: "Remove zookeeper user"
+    user:
+      name: zookeeper
+      state: absent
+
+  - name: "Remove zookeeper group"
+    group:
+      name: zookeeper
+      state: absent

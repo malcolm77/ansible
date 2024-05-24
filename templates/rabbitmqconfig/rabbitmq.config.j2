@@ -1,0 +1,43 @@
+[
+{rabbit,
+  [
+   {tcp_listeners, [{"{{ ip_address | default(ansible_default_ipv4.address) | default(ansible_host) | default('') }}", 5672},
+                    {"xxx.xxx.xxx.xxx", 5672}
+                    ]},
+   {collect_statistics_interval, {{ rabbitmq_collect_statistics_interval|default('60000') }} },
+   %%,{vm_memory_high_watermark, {{ rabbitmq_vm_memory_high_watermark|default('0.6') }} },
+   {rabbitmq_management_agent, [ {force_fine_statistics, true} ] },
+   {kernel, [{net_ticktime,  {{ rabbitmq_kernel_net_ticktime|default('10') }} }]},
+   {heartbeat, {{ rabbitmq_heartbeat|default('10') }} }
+  ]},
+{kernel,
+  [
+  ]},
+{rabbitmq_management,
+  [
+   {listener, [{port,     15672}]},
+   {sample_retention_policies,
+           [{global,[{300,60},{3660,600},{86400,1800}]},
+           {basic,[{300,60}]},
+           {detailed,[{10,5}]}]}
+  ]},
+{rabbitmq_management_agent,
+  [
+  {force_fine_statistics, false}
+  ]},
+{rabbitmq_shovel,
+  [{shovels,
+    [
+    ]}
+  ]},
+{rabbitmq_stomp,
+  [
+  ]},
+{rabbitmq_mqtt,
+  [
+  ]},
+{rabbitmq_amqp1_0,
+  [
+  ]}
+].
+

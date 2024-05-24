@@ -1,0 +1,16 @@
+
+all:
+  children:
+    Jenkins:
+      hosts:
+        jenkinssavle:
+          ansible_host: xxx.xxx.xxx.xxx
+    repo:
+      hosts:
+        repository:
+          ansible_host: xxx.xxx.xxx.xxx
+
+
+
+
+

@@ -1,0 +1,27 @@
+---
+# Specify which python to use
+ansible_python_interpreter: /bin/python3
+
+# Define device to add partition to
+device: /dev/sda
+
+# Define partition number
+partition_number: 4
+
+# Define filesystem type to use 
+filesystem_type: ext4
+
+#Define logical volume size
+volume_size: -45GiB
+
+# Define existing volume group name to use
+volume_group: rootvg
+
+# Define any devices already in volume_group defined below
+existing_pvs: /dev/sda3
+
+# Define logical volume name to use
+logical_volume: optmbsslv
+
+# Define filesystem path to use
+local_path: /opt/mbss

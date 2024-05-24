@@ -1,0 +1,18 @@
+# get-timestamp-os.yml
+---
+- name: Uses shell module to retrieve data and timestamp from the OS
+  hosts: all
+
+  tasks:
+  - name: Get timestamp from the system
+    shell: "date +%Y-%m-%d%H-%M-%S"
+    register: tstamp
+
+  - name: Set variables
+    set_fact:
+     cur_date: "{{ tstamp.stdout[0:10]}}"
+     cur_time: "{{ tstamp.stdout[10:]}}"
+
+  - name: System timestamp - time
+    debug:
+     msg:  "{{ ansible_hostname }} current time: {{ cur_time }}"

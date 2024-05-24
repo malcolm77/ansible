@@ -1,0 +1,20 @@
+- name: Find all logs
+  find:
+    path: /all_logs/
+    patterns: "*.log"
+    recurse: yes
+  register: logs
+
+- name: replace text
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: 'SERVER.*'
+    replace: 'SERVER'
+  with_items: "{{ logs.files }}"
+
+- name: replace text
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: 'SERVER.*'
+    replace: 'SERVER'
+  with_items: "{{ logs.files }}"

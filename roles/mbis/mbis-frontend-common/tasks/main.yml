@@ -1,0 +1,114 @@
+---
+
+
+  # failed with follow error, this task was provided in the
+  #  fatal: [dev4frontend]: FAILED! => {"changed": false, "msg": "Failed to rename computer to 'frontend': Fail to rename computer 'FrontendAnsible' to 'frontend' due to the following exception: Access is denied.", "old_name": "FrontendAnsible", "reboot_required": false}
+  # - name: Change the hostname to sample-hostname
+  #   ansible.windows.win_hostname:
+  #     name: frontend
+
+  - name: A helpful reminder that the timeserver is configured on the domain controller.
+    ansible.builtin.pause:
+      prompt: "NOTE: the time server is configured on the domain controller - pause 10 seconds"
+      seconds: 1
+
+
+  - name: "Start/Enable Time Service"
+    ansible.windows.win_service:
+      name: W32Time
+      state: started
+      start_mode: auto
+
+
+  # # Ensure Google Chrome is not open on the frontend
+  # - name: Install Google Chrome package
+  #   win_package:
+  #     path: "{{ package_baseurl }}/{{ package_name }}"
+  #     product_id: "Google Chrome"
+  #     arguments: /silent /install
+  #     state: present
+  #   vars:
+  #     package_name: "ChromeStandaloneSetup64.exe"
+  #   ignore_errors: yes
+
+    # By default all msi installs and uninstalls will be run with the arguments /log, /qn, /norestart.
+
+  - name: Install VC++ Redistibutables packages
+    vars:
+      packages:
+      - { package_name: vcredist-2013-12.0.30501.0-x64.exe, product_id: "{A749D8E6-B613-3BE3-8F5F-045C84EBA29B}" }
+      - { package_name: vcredist-2013-12.0.30501.0-x86.exe, product_id: "{13A4EE12-23EA-3371-91EE-EFB36DDFFF3E}"}
+      - { package_name: vcredist-14.27.29016-x64.exe, product_id: "{E493B8F4-E300-43EC-95D0-BDF3711297EA}" }
+      - { package_name: vcredist-14.27.29016-x86.exe, product_id: "{E2C131AD-D30F-4D67-ACE9-B3D485E84DA8}" }
+    win_package:
+      path: "{{ frontendpackage_mbiscommonbaseurl }}{{ item.package_name }}"
+      product_id: "/'{{ item.product_id }}/'"
+      arguments:
+      - /install
+      - /quiet
+      - /norestart
+      expected_return_code: [0, 1638, 3010] #1638 means a newer versions is already installed, e.g. from VMTools, )
+    register: _results
+    loop: "{{ packages }}"
+
+  - name: Install Amazon Corretto java
+    vars:
+      package_name: "amazon-corretto-xxx.xxx.xxx.xxx.1-windows-x64.msi"
+      package_productid: "86937BD5-637D-498D-865B-24D6200823C4"
+    block:
+      - name: "Install Amazon Corretto package"
+        win_package:
+          path: "{{ frontendpackage_mbiscommonbaseurl }}/{{ package_name }}"
+          state: present
+          product_id: "{{ package_productid }}"
+
+
+  - name: Installation of Multiprotect package (license_client)
+    vars:
+      package_name: "multiprotect-all-standard-installer-windows-x64-5.6.0.zip"
+      license_client_license_list:
+        - "BCL"
+        - "CLASSIF"
+        - "VERIF"
+        - "WSQ"
+      license_client_license_servers:
+        - "xxx.xxx.xxx.xxx"
+
+    block:
+    - name: Create directory structure
+      win_file:
+        path: "{{ package_directory }}"
+        state: directory
+
+    - name: "Download package [{{ package_name }}]"
+      win_get_url:
+        url: "{{ frontendpackage_mbiscommonbaseurl }}/{{ package_name }}"
+        dest: "{{ package_directory }}/{{ package_name }}"
+        force: no
+      when: "frontendpackage_mbiscommonbaseurl is defined and frontendpackage_mbiscommonbaseurl != ''"
+
+    - name: 'Uncompress Zip files for Multiprotect'
+      # This module is not really idempotent, it will extract the archive every time, and report a change.
+      # win_unzip:
+      #   src: "{{ package_directory }}\\{{ package_name }}"
+      #   dest: "{{ package_directory }}\\{{ package_name | splitext | first }}"
+      #   creates: "{{ package_directory }}\\{{ package_name | splitext | first }}"
+      ansible.windows.win_command: "Powershell Expand-Archive -Path {{ package_directory }}\\{{ package_name }} -DestinationPath {{ package_directory }}\\{{ package_name | splitext | first }}"
+
+    - name: Install Multiprotect windows package
+      win_package:
+        path: "{{ package_directory }}\\{{ package_name | splitext | first  }}\\installers\\windows\\x64\\std\\Multiprotect_License_Protection_Installer.msi"
+        state: present
+
+    - name: Configuration of License client service - Set license servers and license list
+      win_template:
+        src: slm_conf.j2
+        dest: "C:\\Program Files\\Multiprotect\\slm_conf"
+      notify:
+        - "restart Windows License client"
+
+    - name: "Ensure License client is started and in automatic mode"
+      win_service:
+        name: "Multiprotect License Service"
+        state: started
+        start_mode: auto

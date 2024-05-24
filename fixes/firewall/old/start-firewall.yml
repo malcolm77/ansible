@@ -1,0 +1,15 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  serial: 1
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: start firewall service
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+

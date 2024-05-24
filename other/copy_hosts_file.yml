@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Copy hosts file 
+    copy:
+      src: /etc/hosts
+      dest: /etc/
+      owner: root
+      group: root
+      mode: '0644'

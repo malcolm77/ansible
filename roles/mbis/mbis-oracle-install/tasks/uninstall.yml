@@ -1,0 +1,14 @@
+  - name: "Removal of MBIS oracle STD packages - Names: [{{ mbis_oracle_generic_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_oracle_generic_package_names }}"
+      state: absent
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+
+  - ansible.builtin.debug:
+      var: _result

@@ -1,0 +1,6 @@
+---
+# tasks file for download_package
+
+- include_tasks: windows-get_package.yml
+  when: ansible_os_family is defined and ansible_os_family == "Windows"
+

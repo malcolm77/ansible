@@ -1,0 +1,92 @@
+---
+# tasks file for mbis-bisdelete
+
+- name: "Find pattern bis.old-*"
+  ansible.builtin.find:
+    paths: /opt
+    patterns: 'bis.old-*'
+    recurse: false
+    file_type: directory
+  register: directory_to_delete
+
+- name: Debug
+  ansible.builtin.debug:
+    var: directory_to_delete
+
+
+# - name: "Check that /opt/bis.old-* exists"
+#   ansible.builtin.stat:
+#     path: "{{ item.path }}"
+#   with_items: "{{ directory_to_delete.files }}"
+#   register: "old_status"
+
+# - name: Debug
+#   ansible.builtin.debug:
+#     var: old_status
+
+- name: Recursively remove directory
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ directory_to_delete.files }}"
+  register: _results
+  become: true
+  become_user: root
+  when: directory_to_delete.matched > 0
+
+- name: Debug
+  ansible.builtin.debug:
+    var: _results
+
+- name: "Check that /opt/bis exists"
+  ansible.builtin.stat:
+    path: "/opt/bis"
+  register: "bis_stat"
+
+- name: Recursively remove /opt/bis/log directory
+  ansible.builtin.file:
+    path: /opt/bis/log
+    state: absent
+  become_user: root
+
+- name: "Move /opt/bis to /opt/bis.old-auto"
+  ansible.builtin.command: "cp -r /opt/bis /opt/bis.old-{{ ansible_date_time.year }}-{{ ansible_date_time.month }}-{{ ansible_date_time.day }}"
+  become_user: root
+  when: bis_stat.stat.exists
+  register: _results
+
+- name: Recursively remove /opt/bis directory
+  ansible.builtin.file:
+    path: /opt/bis
+    state: absent
+  become_user: root
+  register: _results
+  changed_when: _results.diff.before.path_content.files != ["/opt/bis/.bashrc", "/opt/bis/.bash_profile", "/opt/bis/.bash_logout", "/opt/bis/.kshrc" ]
+
+- name: Recursively remove /opt/bis_CBR_DVI directory
+  ansible.builtin.file:
+    path: /opt/bis_CBR_DVI
+    state: absent
+  become_user: root
+  register: _results
+
+- name: Recursively remove /opt/bis_CBR_INTEGRATION directory
+  ansible.builtin.file:
+    path: /opt/bis_CBR_INTEGRATION
+    state: absent
+  become_user: root
+  register: _results
+
+- name: Recursively remove /opt/bis_CBR_QUALIF directory
+  ansible.builtin.file:
+    path: /opt/bis_CBR_QUALIF
+    state: absent
+  become_user: root
+  register: _results
+
+- name: Recursively remove /opt/bis_CBR_QUALIF directory
+  ansible.builtin.file:
+    path: /opt/certificates
+    state: absent
+  become_user: root
+  register: _results

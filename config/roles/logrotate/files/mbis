@@ -1,0 +1,12 @@
+# Rotate MBIS logs
+# /etc/logrotate.d/mbis
+/opt/bis/log/*.log {
+    su bis bis
+    daily
+    missingok
+    notifempty
+    rotate 2
+    compress
+    delaycompress
+    copytruncate
+}

@@ -1,0 +1,24 @@
+- name: Copy ACIC banner text file to server
+  copy:
+    src: acic-banner.txt
+    dest: /etc/ssh/acic-banner.txt
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Remove any current banner setting
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: absent
+    regexp: '^Banner'
+
+- name: Add the ACIC Banner text setting
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    line: 'Banner /etc/ssh/acic-banner.txt'
+    create: yes
+
+- name: Restart SSH
+  service:
+    name: sshd
+    state: restarted

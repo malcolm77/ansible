@@ -1,0 +1,12 @@
+---
+# This playbook will check the contents of resolv.conf for a particular DNS ip address
+
+- name: Run the Dossier Age Stat Query
+  hosts: SERVER01
+  gather_facts: no
+  tasks:
+  - name: Run the Dossier Age Stat Query
+    shell: sh /home/svc_ansible/dossier-age.sh
+    register: result
+    changed_when: result.rc != 0
+    failed_when: False

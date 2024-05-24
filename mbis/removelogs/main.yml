@@ -1,0 +1,21 @@
+---
+# Version 2
+# Using Find to find then remove files
+#
+- name: Remove everything from the /opt/bis/log folder
+  gather_facts: yes
+  become: yes
+  hosts: all
+
+  tasks:
+    - name: get list of files
+      find:
+        path: /opt/bis/log
+        patterns: "*"
+      register: old_logs
+
+    - name: delete files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ old_logs.files }}"

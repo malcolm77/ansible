@@ -1,0 +1,199 @@
+---
+
+####
+# Playbook Name: Deploy Custo
+# Purpose: Installation of Custo packages on mbis AIO environment
+# Run example: ansible-playbook -i hosts-dev4-90.yaml siteDeployCusto.yml
+####
+
+- name: Deploy MBIS to host
+  hosts: mbis_jboss
+  remote_user: root
+  become: true
+  become_user: bis
+  become_method: sudo   # Become method being used when manually running scripts
+  become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+
+  vars:
+  - ansible_python_interpreter: /usr/bin/python3
+  - NotifyMessage: "Custo packages will be deployed to the server in 5min, please save your work."
+  #- custorepobasePath: http://xxx.xxx.xxx.xxx/custo/integration
+  #- custorepopackagepath: "http://xxx.xxx.xxx.xxx/custo/mbis-5.11.0-4.0.2/backend/Custo/"
+  #- custorepopackagepath: "http://xxx.xxx.xxx.xxx/custo/integration/release/backend/Custo/"
+
+
+
+  pre_tasks:
+
+  - ansible.builtin.import_role:
+      name: mbis-notify
+
+  - name: Gather the package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: Populate service facts
+    ansible.builtin.service_facts:
+
+  - name: Send shutdown mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "shutdown mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  - name: Check if DeployWars.sh file exists
+    ansible.builtin.stat:
+      path: "/opt/bis/scripts/DeployWars.sh"
+    register: DeployWarsfile
+
+  - name: Unload wars to allow upgrade
+    ansible.builtin.shell: "/opt/bis/scripts/DeployWars.sh -u"
+    become: true
+    become_user: bis
+    become_method: sudo   # Become method being used when manually running scripts
+    become_flags: '-i'  # adding -l to load the user profile which includes environment variables.
+    register: _result
+    when: DeployWarsfile.stat.exists
+
+  tasks:
+    - ansible.builtin.import_role:
+        name: mbis/mbis-sso-install
+        tasks_from: empty.yml
+
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-app-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-wms
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-des-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-fes-install
+        tasks_from: empty.yml
+    - ansible.builtin.import_role:
+        name: mbis/mbis-oracle-install
+        tasks_from: empty.yml
+
+    - ansible.builtin.import_role:
+        name:  mbis/mbis-tera-install
+        tasks_from: empty.yml
+
+    - ansible.builtin.import_role:
+        name: mbis/mbis-app_custo-install
+    - ansible.builtin.import_role:
+        name: mbis/mbis-des_custo-install
+    # Not Required on a daily basis
+    # - ansible.builtin.import_role:
+    #     name: mbis/mbis-des_custo_mig-install
+    - ansible.builtin.import_role:
+        name: mbis/mbis-oracle_custo-install
+    - ansible.builtin.import_role:
+        name: mbis/mbis-elk_custo
+
+
+
+    - name: Manually call post install handlsers
+      ansible.builtin.command: echo post install
+      notify: "postinstall mbis"
+
+
+
+  post_tasks:
+
+
+  - name: Flush outstanding handlers
+    ansible.builtin.meta: flush_handlers
+
+
+  - name: Check if DeployWars.sh file exists
+    ansible.builtin.stat:
+      path: "/opt/bis/scripts/DeployWars.sh"
+    register: DeployWarsfile
+
+  - name: "load wars to decrease startup time"
+    ansible.builtin.shell: "/opt/bis/scripts/DeployWars.sh -d"
+    become_user: bis
+    become: true
+    become_method: sudo   # Become method being used when manually running scripts
+    become_flags: '-i'  # adding -l to load the user profile which includes environment variables.  register: result
+    register: _result
+    when: DeployWarsfile.stat.exists
+
+
+
+  - ansible.builtin.debug:
+      var: _result
+    when: DeployWarsfile.stat.exists
+
+  - name: Send startup mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "prestartup mbis"
+
+
+
+
+  # ### Additional configuration  ###
+
+    #####
+    #  Do we still need to set the defaultAccuracyLevel for mbss ?
+    #  Sj
+    #####
+
+
+  # - name: Update defaultAccuracyLevel and restart service
+  #   become: true
+  #   become_user: mbssadmin
+  #   block:
+    # - name: Set the defaultAccuracyLevel to '3' in bioparam-configuration.xml
+    #   xml:
+    #     path: /opt/mbss/conf/bioparam-configuration.xml
+    #     xpath: "{{ item }}"
+    #     value: 3
+    #   with_items:
+    #     #- /bioparam/oneOneParameters/defaultAccuracyLevel
+    #     - /bioparam/personToPersonAlgoParams/defaultAccuracyLevel
+    #     #- /bioparam/caseToPersonAlgoParams/defaultAccuracyLevel
+    #     #- /bioparam/personToCaseAlgoParams/defaultAccuracyLevel
+    #     #- /bioparam/caseToCaseAlgoParams/defaultAccuracyLevel
+    #     #- /bioparam/authentAlgoParams/defaultAccuracyLevel
+    #   register: _SetdefaultAccuracyLevel
+
+
+
+    # - name: Set the defaultAccuracyLevel to '3' in bioparam-configuration.xml d
+    #   ansible.builtin.replace:
+    #     path: /opt/mbss/conf/bioparam-configuration.xml
+    #     after: '<personToPersonAlgoParams>'
+    #     before: '</personToPersonAlgoParams>'
+    #     regexp: '(?P<start><defaultAccuracyLevel>)(.*)(?P<end><\/defaultAccuracyLevel>)'
+    #     replace: '\g<start>3\g<end>'
+    #   become: true
+    #   become_user: mbssadmin
+    #   register: _SetdefaultAccuracyLevel
+
+    # - name: "restart service"
+    #   ansible.builtin.shell: |
+    #     adminClient.sh -C stopgrid
+    #     adminClient.sh -C status
+    #     adminClient.sh -C startgrid
+    #     adminClient.sh -C status
+    #   become: true
+    #   become_user: mbssadmin
+    #   ignore_errors: yes
+    #   when: _SetdefaultAccuracyLevel
+
+  ### Additional configuration end ###
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+
+  - name: Send startup mbis notificaiton
+    ansible.builtin.command: echo "notify shutdown"
+    notify: "startup mbis"
+
+  - name: Flush handlers
+    ansible.builtin.meta: flush_handlers
+

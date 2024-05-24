@@ -1,0 +1,12 @@
+- name: Copy RPM to server
+  ansible.builtin.copy: 
+    src: firmware-nic-qlogic-nx2-syn-3.30.2-1.1.x86_64.rpm
+    dest: /Extras/firmware-nic-qlogic-nx2-syn-3.30.2-1.1.x86_64.rpm
+    force: yes
+
+- name: Install RPM
+  ansible.builtin.yum: 
+    name: /Extras/firmware-nic-qlogic-nx2-syn-3.30.2-1.1.x86_64.rpm
+    disable_gpg_check: true
+    disablerepo: "ansible_mbss,SERVER09-BaseOS,SERVER09-AppStream"
+    state: present

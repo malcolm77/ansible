@@ -1,0 +1,74 @@
+
+
+# - name: "get installed package info"
+#   ansible.builtin.shell:  rpm -qi bis-customization-dbm-oracle
+#   register: dbmpackageinfo
+
+# - name: Print return information from the previous task
+#   ansible.builtin.debug:
+#     var: dbmpackageinfo
+#     verbosity: 2
+
+
+
+# - name: "Install upgrade"
+#   ansible.builtin.shell: |
+#     rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx/custo/release/backend/Custo/bis-customization-dbm-oracle-mbis.rpm
+#     rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx/custo/release/backend/Custo/bis-customization-backend-mbis.rpm
+#     rpm -ivh --replacefiles http://xxx.xxx.xxx.xxx/custo/release/backend/Custo/bis-customization-des-mbis.rpm
+#   ignore_errors: yes
+#   become: true
+#   become_user: root
+
+
+
+
+
+# - name: "Installation of MBIS Backend custo packages"
+#   ansible.builtin.shell: "rpm -qa | grep '^bis-custo.*backend'"
+#   args:
+#     warn: no
+#   changed_when: false
+
+# #NOTE: When condition may not be required
+# #  when: mbis_custo_force_reinstall|default(false) or item+'-'+mbis_custo_version+'-'+mbis_custo_release not in mbis_custo_backend_packages_installed.stdout
+# #  notify:
+# #    - "Run default etcPostInstall.sh script"
+# # example install command #  ansible.builtin.shell: "rpm -ivh --force --replacefiles {{ mbis_des_custo_package_directory }}/{{item}}-{{ mbis_custo_version}}-{{ mbis_custo_release}}{{ mbis_custo_package_architecture  | default('') | regex_replace('^(.+)$', '.\\1') }}.rpm"
+
+
+# - name: "Installation of MBIS DES custo packages"
+#   ansible.builtin.shell: "rpm -qa | grep '^bis-custom.*des'"
+#   args:
+#     warn: no
+#   changed_when: false
+
+# - name: "Installation of MBIS ORACLE custo packages"
+#   ansible.builtin.shell:  "rpm -qa | grep '^bis-custom.*dbm'"
+#   args:
+#     warn: no
+#   changed_when: false
+
+
+
+
+- name: Gather the package facts
+  ansible.builtin.package_facts:
+    manager: rpm
+  vars:
+  - ansible_python_interpreter: /usr/bin/python3
+
+- name: Check whether a package called foobar is installed
+  ansible.builtin.debug:
+    msg: "{{ ansible_facts.packages['bis-customization-backend'] | length }} versions of foobar are installed! with Version"
+  when: "'bis-customization-backend' in ansible_facts.packages"
+
+- name: List installed versions of a package
+  ansible.builtin.debug:
+    msg: "{{ ansible_facts.packages['bis-customization-backend'][0].version }}_{{ ansible_facts.packages['bis-customization-backend'][0].release }}"
+  when: "'bis-customization-backend' in ansible_facts.packages"
+
+
+- name: "get external package info"
+  ansible.builtin.shell:  "rpm -qp http://xxx.xxx.xxx.xxx/custo/release/backend/Custo/bis-customization-dbm-oracle-mbis.rpm --queryformat '%{VERSION}_%{RELEASE}\n'"
+  register: dbmexternalpackageinfo

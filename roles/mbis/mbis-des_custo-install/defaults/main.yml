@@ -1,0 +1,5 @@
+---
+# defaults file for mbis-des_custo-install
+
+mbis_package_names: bis-customization-des
+

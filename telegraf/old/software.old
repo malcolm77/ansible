@@ -1,0 +1,21 @@
+- name: Copy software inventory script
+  ansible.builtin.copy:
+    src: software_inventory.sh
+    dest: /etc/telegraf/scripts/software_inventory.sh
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+
+- name: Copy software inventory conf
+  ansible.builtin.copy:
+    src: software_inventory.conf
+    dest: /etc/telegraf/telegraf.d/software_inventory.conf
+    owner: telegraf
+    group: telegraf
+    mode: '0644'
+
+- name: Restart Telegraf service
+  ansible.builtin.service:
+    name: telegraf
+    state: restarted
+

@@ -1,0 +1,6 @@
+---
+# tasks file for mbis-revert-vm
+
+tasks:
+  - name: Revert to a snapshot
+    ansible.builtin.command: pwsh -f scripts/vSphereRevert.ps1

@@ -1,0 +1,5 @@
+---
+# vars file for mbis-etchosts
+hostfile:
+hostnames: []
+IPaddress:

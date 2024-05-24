@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Update / Fix the resolv.conf file 
+    copy: 
+      src: /etc/resolv.conf
+      dest: /etc/resolv.conf

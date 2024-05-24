@@ -1,0 +1,15 @@
+---
+# tasks file for testrole
+
+- name: Test ping
+  ping:
+
+- name: List ansible packages and register result to print with debug later
+  yum:
+    list: ansible
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result
+    verbosity: 2

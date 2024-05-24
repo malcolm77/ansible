@@ -1,0 +1,43 @@
+---
+# tasks file for mbis-oracle-install
+
+- name: Install oracle packages
+  block:
+  - name: "TEST: Installation of MBIS oracle STD packages - Names: [{{ mbis_oracle_generic_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_oracle_generic_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - ansible.builtin.debug:
+      var: _result
+
+  rescue:
+
+  - name: Uninstall oracle custo packages when yum detects a file conflict
+    ansible.builtin.import_role:
+      name: mbis/mbis-oracle_custo-install
+      tasks_from: uninstall.yml
+
+  - name: "Rescue: Installation of MBIS oracle STD packages - Names: [{{ mbis_oracle_generic_package_names }}] - Version [{{ mbis_version }}]"
+    yum:
+      name: "{{ mbis_oracle_generic_package_names }}"
+      state: latest
+      disablerepo: "*"
+      enablerepo: "{{ mbis_repository_name }}"
+    become: true
+    become_user: root
+    async: 3600
+    poll: 10
+    register: _result
+    notify: "postinstall mbis"
+
+  - ansible.builtin.debug:
+      var: _result

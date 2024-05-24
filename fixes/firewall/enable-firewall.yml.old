@@ -1,0 +1,135 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  remote_user: svc_ansible
+  vars_files:
+    - ~/svc_ansible.yml
+
+  tasks:
+  - name: start firewall service
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+      enabled: true
+
+  - name: open firewall for network 78
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall for network 79
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall for network 76
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 22
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 2
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 56
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 61
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet  58
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 1
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 60
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 59
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 8
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 76
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 22
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+  - name: open firewall to subnet 18
+    ansible.posix.firewalld:
+      rich_rule: rule family=ipv4 source address=xxx.xxx.xxx.xxx/24 accept
+      zone: public
+      permanent: yes
+      immediate: yes
+      state: enabled
+

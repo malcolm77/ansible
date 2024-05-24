@@ -1,0 +1,17 @@
+---
+# tasks file for mbis-resize-opt
+
+- name: Resize opt logical volume
+  lvol:
+    vg: rootvg
+    lv: optlv
+    size: 25G
+    shrink: no
+    resizefs: yes
+  register: _results
+  become_user: root
+  ignore_errors: yes
+
+- name: debug
+  ansible.builtin.debug:
+    var: _results

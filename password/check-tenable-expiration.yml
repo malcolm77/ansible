@@ -1,0 +1,15 @@
+---
+- hosts: all
+  gather_facts: no
+  become: no
+  ignore_errors: true
+
+  tasks:
+    - name: check password age
+      shell: chage -l svc_tenablesc # | grep "Password expires" | awk -F':' '{ print $2 }'
+      register: shell_output
+
+    - name: Show date
+      debug:
+        msg: The svc_tenablesc account expires on {{ shell_output.stdout }}
+

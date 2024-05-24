@@ -1,0 +1,77 @@
+---
+# tasks file for mbis-checkenvconfig_integration
+
+
+  - name: SVN checkout
+    subversion:
+      repo: "{{ packageCheckoutBrachTag }}"
+      dest: "{{ aucjacicCheckoutConfigPath }}"
+      in_place: yes
+    register: result
+
+  - name: Generate etc differences
+    ansible.builtin.shell: diff -r -w ptkads/opt/bis/etc ptkads/opt/bis_CBR_INTEGRATION/etc > IntegrationEnvironmentConfigurationChanges.txt
+    args:
+      chdir: "{{ aucjacicCheckoutConfigPath }}"
+    register: _results
+    failed_when: (_results.stderr != '')
+
+  - name: Generate mbis.xml differences
+    ansible.builtin.shell: diff -r -w ptkads/opt/bis_CBR_INTEGRATION/wildfly-20.0.1.Final/standalone/ ptkads/opt/bis/jboss/standalone/ >> IntegrationEnvironmentConfigurationChanges.txt
+    args:
+      chdir: "{{ aucjacicCheckoutConfigPath }}"
+    ignore_errors: yes
+    failed_when: (_results.stderr != '')
+
+  # Add Des Compare
+
+  - name: Compare with last change or copy current change to Anbile Server
+    block:
+    - name: Copy approved differences from ansible server to repo server for comparision
+      copy:
+        src: fetched/IntegrationEnvironmentConfigurationChangesapproved.txt
+        dest: "{{ aucjacicCheckoutConfigPath }}/IntegrationEnvironmentConfigurationChangesapproved.txt"
+
+
+    - name: Compare differences to approved differences.
+      ansible.builtin.shell: diff -r -w -s IntegrationEnvironmentConfigurationChangesapproved.txt IntegrationEnvironmentConfigurationChanges.txt
+      args:
+        chdir: "{{ aucjacicCheckoutConfigPath }}"
+      ignore_errors: yes
+      register: _resultschangedvsapproved
+      failed_when: (_resultschangedvsapproved.stderr != '')
+      changed_when: "'are identical' not in _resultschangedvsapproved.stdout "
+
+    - name: Print out out new change
+      ansible.builtin.debug:
+        msg: "new changes to be merged then approved in Ansbile {{ _resultschangedvsapproved.stdout_lines }}"
+      when: "'are identical' not in _resultschangedvsapproved.stdout "
+
+    - name: Confirm changes are expected
+      pause:
+        prompt: "are the change between Bis and environment expected (yes/no)"
+      register: _confirm_changed
+      when: "'are identical' not in _resultschangedvsapproved.stdout "
+
+    - name: debug
+      ansible.builtin.debug:
+        var: _confirm_changed
+
+    - name: User did not expect changes, ending play
+      ansible.builtin.meta: end_play
+      when: not _confirm_changed.user_input | bool and 'are identical' not in _resultschangedvsapproved.stdout
+
+
+    - name: Upload Configuration differences to Ansible Server
+      fetch:
+        src: "{{ aucjacicCheckoutConfigPath }}/IntegrationEnvironmentConfigurationChanges.txt"
+        dest: fetched/IntegrationEnvironmentConfigurationChangesapproved.txt
+        flat: yes
+      when: "'are identical' not in _resultschangedvsapproved.stdout "
+
+    rescue:
+    - name: Upload Configuration differences to Ansible Server
+      fetch:
+        src: "{{ aucjacicCheckoutConfigPath }}/IntegrationEnvironmentConfigurationChanges.txt"
+        dest: fetched/IntegrationEnvironmentConfigurationChangesapproved.txt
+        flat: yes

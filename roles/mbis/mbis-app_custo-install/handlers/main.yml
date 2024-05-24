@@ -1,0 +1,6 @@
+---
+# handlers file for -install
+
+- name: Mbis Post Install commands
+  include_tasks: handlers/postinstall.yml
+  listen: "custo postinstall mbis"
