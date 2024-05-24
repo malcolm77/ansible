@@ -1,5 +1,0 @@
-
-ACIC IT SECURITY POLICY – Please read…
-By the use of a user's logon, the user agrees that it will only be used for the purposes for which it is granted in respect of their authorised use of National Automated Fingerprint Identification System (domain)., Use of domain computer facilities is restricted to users entitled to access the information contained in the domain., Unauthorised use or alteration of computer information is prohibited. Users must not disclose data without authorisation or allow, send or store data that may be considered offensive, against government policies or cause embarrassment to any data owner. Users must complies with USB drives use as Business needs only. All user activities on the system will be logged and monitored. Users must not install additional software without appropriate authorisation from the ACIC.BREACHES OF THIS POLICY MAY LEAD TO DISCIPLINARY ACTION INCLUDING PROSECUTION.
-
-
