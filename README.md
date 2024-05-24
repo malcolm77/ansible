@@ -1,10 +1,9 @@
-<h2>This a collection of various Ansible playbooks for use on NextGen servers</h2>
+<h2>This a collection of various Ansible playbooks</h2>
 
 <strong>addpartition</strong> - Creates a new partition using any remain disk space, then adds it to a VolumeGroup</br>
 <strong>config</strong> - A collection of roles for configuring a new server</br>
 <ul>
 <li>activedirectory - copy script to server that can add it to AD</li>
-<li>banner - install ACIC SSH banner</li>
 <li>chrony - configure Chrony</li>
 <li>email - Config local email</li>
 <li>firewall - Configure firewall</li>
@@ -15,7 +14,6 @@
 <li>resolv - Update /etc/resolv.conf</li>
 <li>timezone - Set TimeZone to be Sydney/Australia</li>
 </ul>
-<strong>mbss</strong> - Create some MBSS and MBIS mount points</br>
 <strong>mcafee</strong> - Install McAfee Endpoint Security</br>
 <strong>old</strong> - A collection of old playbooks</br>
 <strong>oracle</strong> - Configure some settings for Oracle servers</br>
