@@ -26,8 +26,8 @@
       tags: base, ssh 
     - role: chrony              # set chrony to point to TOR switch
       tags: base, time
-    - role: firewall            # enable firewall
-      tags: base,firewall
+#    - role: firewall            # enable firewall
+#    tags: base,firewall
     - role: nodeexporter        # install the node_exporter and add server name to prometheus on monitoring host
       tags: base,node
     - role: hardening           # copy and but dont run hardening scripts

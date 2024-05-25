@@ -27,24 +27,17 @@
     state: started
     enabled: yes
 
-- name: open firewall ports
-  ansible.posix.firewalld:
-    port: 9100/tcp
-    permanent: yes
-    state: enabled
-    immediate: yes
+- name: make text file upload folder
+  ansible.builtin.file:
+    path: /tmp/node
+    owner: root
+    group: root
+    mode: '755'
+    
+    # - name: open firewall ports
+    #   ansible.posix.firewalld:
+    #     port: 9100/tcp
+    #     permanent: yes
+    #     state: enabled
+    #     immediate: yes
 
-# - name: Add server to promethus config
-#   ansible.builtin.lineinfile:
-#     path: /etc/prometheus/prometheus.yml
-#     line: "      - {{ inventory_hostname }}:9100"
-#     insertafter: EOF
-#   delegate_to: SERVER04
-# 
-# - name: restart prometheus service
-#   ansible.builtin.service:
-#     name: prometheus.service
-#     state: restarted
-#   delegate_to: SERVER04
-#   run_once: true
-# 
